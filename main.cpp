@@ -171,16 +171,16 @@ Field read_file(std::string const& filename)
 void move(int dir, int& px, int& py)
 {
     switch (dir) {
-        case 1: /* up */
+        case 0: /* up */
             py--;
             break;
-        case 2: /* right */
+        case 1: /* right */
             px++;
             break;
-        case 3: /* down */
+        case 2: /* down */
             py++;
             break;
-        case 4: /* left */
+        case 3: /* left */
             px--;
             break;
     }
@@ -190,7 +190,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
 {
     int px = 0;
     int py = 0;
-    int dir = 3;
+    int dir = 2;
 
     char mbuf[32256];
     memset(mbuf, 0, 32256);
@@ -203,16 +203,16 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
                 /* go back */
                --steps;
                 switch (dir) {
-                    case 1: /* up */
+                    case 0: /* up */
                         py++;
                         break;
-                    case 2: /* right */
+                    case 1: /* right */
                         px--;
                         break;
-                    case 3: /* down */
+                    case 2: /* down */
                         py--;
                         break;
-                    case 4: /* left */
+                    case 3: /* left */
                         px++;
                         break;
                 }
@@ -223,12 +223,12 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
                     dir--;
                 }
 
-                if (dir == 0) dir = 4;
-                if (dir == 5) dir = 1;
+                if (dir == -1) dir = 3;
+                if (dir == 4) dir = 0;
                 break;
 
             case '*': /* memory operator */
-                if (mloc == 1 && (dir == 2 || dir == 4)) {
+                if (mloc == 1 && (dir == 1 || dir == 3)) {
                     /* IO */
                     if (mbuf[0] == 0) { /* input */
                         mbuf[0] = static_cast<char>(getchar());
@@ -244,16 +244,16 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
                     }
                 } else { /* not IO */
                     switch (dir) {
-                        case 1: /* up */
+                        case 0: /* up */
                             mloc--;
                             break;
-                        case 2: /* right */
+                        case 1: /* right */
                             mbuf[mloc]++;
                             break;
-                        case 3: /* down */
+                        case 2: /* down */
                             mloc++;
                             break;
-                        case 4: /* left */
+                        case 3: /* left */
                             mbuf[mloc]--;
                             break;
                     }
