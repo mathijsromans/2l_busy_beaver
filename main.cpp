@@ -32,6 +32,11 @@
 class Field
 {
 public:
+    Field()
+    {
+        memset(pbuf, 0, 1024*1024);
+    }
+
     char get(int x, int y) const
     {
         return pbuf[XY(x, y)];
@@ -64,6 +69,29 @@ public:
 private:
     char pbuf[1024*1024];
 };
+
+Field first_field(int size)
+{
+    Field f;
+    for (int y = 0; y != size-1; y++) {
+        for (int x = 0; x != size-1; x++) {
+            f.set(x, y, ' ');
+        }
+    }
+    for( int i = 0; i != size; ++i )
+    {
+        f.set(i, size-1, '+');
+        f.set(size-1, i, '+');
+        f.set(i, size, '\0');
+        f.set(size, i, '\0');
+    }
+    return f;
+}
+
+Field next()
+{
+
+}
 
 Field read_file(std::string const& filename)
 {
@@ -208,9 +236,8 @@ int main(int argc, char **argv)
         dlev = 0;
     }
 
-    char pbuf[1024*1024];
-    memset(pbuf, 0, 1024*1024);
-    Field f = read_file(argv[1]);
+//    Field f = read_file(argv[1]);
+    Field f = first_field(3);
     unsigned int steps = execute(f, outbuf, dlev);
     printf("Total steps: %d\n", steps);
 
