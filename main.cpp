@@ -42,7 +42,7 @@ void read_file(std::string const& filename, char pbuf[1024*1024])
   }
 }
 
-void execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
+unsigned int execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
 {
     int px = 0;
     int py = 0;
@@ -180,7 +180,7 @@ void execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
 
         /* quit if < 0 */
         if (px < 0 || py < 0) {
-            return;
+            return steps-1;
         }
     }
 }
@@ -207,6 +207,8 @@ int main(int argc, char **argv)
     char pbuf[1024*1024];
     memset(pbuf, 0, 1024*1024);
     read_file(argv[1], pbuf);
-    execute(pbuf, outbuf, dlev);
+    unsigned int steps = execute(pbuf, outbuf, dlev);
+    printf("Total steps: %d\n", steps);
+
     return 0;
 }
