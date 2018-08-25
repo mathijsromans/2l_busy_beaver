@@ -168,6 +168,8 @@ Field read_file(std::string const& filename)
     return f;
 }
 
+class ExitException : public std::exception {};
+
 void move(int dir, int& px, int& py)
 {
     switch (dir) {
@@ -184,12 +186,16 @@ void move(int dir, int& px, int& py)
             px--;
             break;
     }
+    /* quit if < 0 */
+    if (px < 0 || py < 0) {
+        throw ExitException();
+    }
 }
 
 unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsigned int dlev)
 {
     int px = 0;
-    int py = 0;
+    int py = -1;
     int dir = 2;
 
     char mbuf[32256];
@@ -197,34 +203,25 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
     int mloc = 2;
 
     unsigned int steps = 1;
-    while(true) {
-        switch(f.get(px, py)) {
-            case '+': /* branch */
-                /* go back */
-               --steps;
-                switch (dir) {
-                    case 0: /* up */
-                        py++;
-                        break;
-                    case 1: /* right */
-                        px--;
-                        break;
-                    case 2: /* down */
-                        py--;
-                        break;
-                    case 3: /* left */
-                        px++;
-                        break;
-                }
-
+    try {
+        while(true) {
+            int next_x = px;
+            int next_y = py;
+            move(dir, next_x, next_y);
+            while(f.get(next_x, next_y) == '+') {
                 if (mbuf[mloc]) {
                     dir = (dir+1)%4; // turn right
                 } else {
                     dir = (dir+3)%4; // turn left
                 }
-                break;
-
-            case '*': /* memory operator */
+                next_x = px;
+                next_y = py;
+                move(dir, next_x, next_y);
+            }
+            px = next_x;
+            py = next_y;
+            ++steps;
+            if (f.get(px, py) == '*') {
                 if (mloc == 1 && (dir == 1 || dir == 3)) {
                     /* IO */
                     if (mbuf[0] == 0) { /* input */
@@ -255,31 +252,22 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
                             break;
                     }
                 }
-                break;
+            }
+
+            /* if debugging, output */
+            if (dlev != 0) {
+                f.print(px, py);
+                fflush(stdout);
+                printf("%d\n\n", steps);
+                usleep(1000000 / dlev);
+            }
+
+            if (steps > max_steps) {
+                return 0;
+            }
         }
-
-        /* if debugging, output */
-        if (dlev != 0) {
-            f.print(px, py);
-            fflush(stdout);
-            //printf("\n%s\n", outbuf);
-            printf("%d\n\n", steps);
-
-            usleep(1000000 / dlev);
-        }
-
-        /* now move */
-        ++steps;
-        move(dir, px, py);
-
-        /* quit if < 0 */
-        if (px < 0 || py < 0) {
-            return steps-1;
-        }
-
-        if (steps > max_steps) {
-            return 0;
-        }
+    } catch (ExitException const&) {
+        return steps-1;
     }
 }
 
