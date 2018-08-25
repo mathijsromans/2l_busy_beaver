@@ -46,6 +46,12 @@ int main(int argc, char **argv)
         dlev = 0;
     }
 
+
+
+    char pbuf[1024*1024];
+    memset(pbuf, 0, 1024*1024);
+    int py = 0;
+
     /* read in the file */
     FILE *pinp = fopen(argv[1], "r");
     if (!pinp) {
@@ -53,12 +59,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    char pbuf[1024*1024];
-    memset(pbuf, 0, 1024*1024);
-    int py = 0;
     while (!feof(pinp)) {
         char pline[1024];
-        fgets(pline, 1024, pinp);
+        if (!fgets(pline, 1024, pinp)) {
+          break;
+        }
 
         size_t ostrlen = strlen(pline);
         if (pline[ostrlen-1] == '\n') {
@@ -66,6 +71,7 @@ int main(int argc, char **argv)
         }
 
         strcpy(pbuf + XY(0, py), pline);
+
         py++;
     }
 
@@ -80,10 +86,12 @@ int main(int argc, char **argv)
     int mloc = 2;
 
     char prev;
-    while (1) {
+    unsigned int steps = 1;
+    while(true) {
         switch(pbuf[XY(px, py)]) {
             case '+': /* branch */
                 /* go back */
+               --steps;
                 switch (dir) {
                     case 1: /* up */
                         py++;
@@ -180,12 +188,14 @@ int main(int argc, char **argv)
             }
             pbuf[XY(px, py)] = prev;
 
-            printf("\n%s\n", outbuf);
+            //printf("\n%s\n", outbuf);
+            printf("%d\n\n", steps);
 
             usleep(1000000 / dlev);
         }
 
         /* now move */
+        ++steps;
         switch (dir) {
             case 1: /* up */
                 py--;
