@@ -20,63 +20,47 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 
 #define XY(x,y) (((y)*1024)+(x))
 
 int main(int argc, char **argv)
 {
-    char pbuf[1024*1024];
-    int px, py, oy;
-    int vx, vy, vye;
-    int ovx = 1024;
-    int ovy = 1024;
-    int dir;
-    char prev;
-
-    char mbuf[32256];
-    int mloc;
-
-    FILE *pinp;
-    char pline[1024];
-
-    int dlev;
-    char *outbuf;
-
     if (argc < 2) {
         printf("Use: %s <program>\n", argv[0]);
         return 1;
     }
 
+    char *outbuf = nullptr;
+    unsigned int dlev;
+
     /* get debug level */
     if (argc > 2) {
-        dlev = atoi(argv[2]);
-        outbuf = (char *) malloc(32256);
+        dlev = static_cast<unsigned int>(atoi(argv[2]));
+        outbuf = static_cast<char *>(malloc(32256));
         outbuf[0] = '\0';
     } else {
-        outbuf = NULL;
         dlev = 0;
     }
 
-    memset(pbuf, 0, 1024*1024);
-    py = 0;
-
     /* read in the file */
-    pinp = fopen(argv[1], "r");
-    if (pinp == NULL) {
+    FILE *pinp = fopen(argv[1], "r");
+    if (!pinp) {
         perror("fopen");
         return 1;
     }
 
+    char pbuf[1024*1024];
+    memset(pbuf, 0, 1024*1024);
+    int py = 0;
     while (!feof(pinp)) {
-        int ostrlen;
-
+        char pline[1024];
         fgets(pline, 1024, pinp);
 
-        ostrlen = strlen(pline);
+        size_t ostrlen = strlen(pline);
         if (pline[ostrlen-1] == '\n') {
             pline[ostrlen-1] = '\0';
         }
@@ -87,14 +71,15 @@ int main(int argc, char **argv)
 
     fclose(pinp);
 
-
-    px = 0;
+    int px = 0;
     py = 0;
-    dir = 3;
+    int dir = 3;
 
+    char mbuf[32256];
     memset(mbuf, 0, 32256);
-    mloc = 2;
+    int mloc = 2;
 
+    char prev;
     while (1) {
         switch(pbuf[XY(px, py)]) {
             case '+': /* branch */
@@ -128,7 +113,7 @@ int main(int argc, char **argv)
                 if (mloc == 1 && (dir == 2 || dir == 4)) {
                     /* IO */
                     if (mbuf[0] == 0) { /* input */
-                        mbuf[0] = getchar();
+                        mbuf[0] = static_cast<char>(getchar());
                     } else { /* output */
                         /* if debugging, buffer output */
                         if (dlev != 0) {
@@ -158,6 +143,10 @@ int main(int argc, char **argv)
                 break;
         }
 
+        int vx, vy, vye;
+        int ovx = 1024;
+        int ovy = 1024;
+
         /* if debugging, output */
         if (dlev != 0) {
             /*system("clear");*/
@@ -186,7 +175,7 @@ int main(int argc, char **argv)
 
             prev = pbuf[XY(px, py)];
             pbuf[XY(px, py)] = '@';
-            for (oy = vy; pbuf[XY(0, oy)] != '\0' && oy <= vye; oy++) {
+            for (int oy = vy; pbuf[XY(0, oy)] != '\0' && oy <= vye; oy++) {
                 printf("%.*s\n", 80, pbuf + XY(vx, oy));
             }
             pbuf[XY(px, py)] = prev;
