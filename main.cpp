@@ -200,7 +200,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
 
     char mbuf[32256];
     memset(mbuf, 0, 32256);
-    int mloc = 2;
+    int mloc = 32256/2;
 
     unsigned int steps = 1;
     try {
