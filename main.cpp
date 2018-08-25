@@ -37,6 +37,16 @@ public:
         memset(pbuf, 0, 1024*1024);
     }
 
+    bool operator==(Field const& other) const
+    {
+        return std::equal(std::begin(pbuf), std::end(pbuf), std::begin(other.pbuf));
+    }
+
+    bool operator!=(Field const& other) const
+    {
+        return !(*this == other);
+    }
+
     char get(int x, int y) const
     {
         return pbuf[XY(x, y)];
@@ -52,6 +62,26 @@ public:
         strcpy(pbuf + XY(0, y), line.c_str());
     }
 
+    int size() const
+    {
+        int sz = 0;
+        for (int y = 0; get(0, y) != '\0' && y <= 1024; y++) {
+           for (int x = 0; get(0, x) != '\0' && x <= 1024; x++) {
+               char c = get(x,y);
+               if (c == '+' || c == '*') {
+                   sz = std::max(sz, x);
+                   sz = std::max(sz, y);
+               }
+           }
+        }
+        return sz;
+    }
+
+    void print() const
+    {
+        print(-1, -1);
+    }
+
     void print(int px, int py) const
     {
         for (int y = 0; get(0, y) != '\0' && y <= 1024; y++) {
@@ -64,6 +94,7 @@ public:
             }
             printf("\n");
         }
+        printf("\n");
     }
 
 private:
@@ -88,9 +119,38 @@ Field first_field(int size)
     return f;
 }
 
-Field next()
+Field next(Field const& orig)
 {
-
+    Field f = orig;
+    int size = f.size();
+    int x = 0;
+    int y = 0;
+    bool done = false;
+    while(!done) {
+        char c = f.get(x, y);
+        switch(c) {
+            case '+':
+                f.set(x, y, '*');
+                done = true;
+                break;
+            case '*':
+                f.set(x, y, ' ');
+                break;
+            default:
+                f.set(x, y, '+');
+                done = true;
+                break;
+        }
+        x = (x+1) % size;
+        if ( x == 0 ) {
+            y = (y+1) % size;
+            if ( y == 0 )
+            {
+                done = true;
+            }
+        }
+    }
+    return f;
 }
 
 Field read_file(std::string const& filename)
@@ -108,7 +168,7 @@ Field read_file(std::string const& filename)
     return f;
 }
 
-unsigned int execute(Field const& f, char *outbuf, unsigned int dlev)
+unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsigned int dlev)
 {
     int px = 0;
     int py = 0;
@@ -214,6 +274,10 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int dlev)
         if (px < 0 || py < 0) {
             return steps-1;
         }
+
+        if (steps > max_steps) {
+            return 0;
+        }
     }
 }
 
@@ -237,9 +301,20 @@ int main(int argc, char **argv)
     }
 
 //    Field f = read_file(argv[1]);
-    Field f = first_field(3);
-    unsigned int steps = execute(f, outbuf, dlev);
-    printf("Total steps: %d\n", steps);
-
+    Field orig = first_field(3);
+    Field f = orig;
+    unsigned int iter = 0;
+    unsigned int max_steps = 0;
+    do
+    {
+        f.print();
+        unsigned int steps = execute(f, outbuf, 100, 400);
+        printf("Total steps: %d\n", steps);
+        max_steps = std::max(max_steps, steps);
+        f = next(f);
+        ++iter;
+    }
+    while (f != orig);
+    printf("Number of fields: %d, maximum number of steps: %d\n", iter, max_steps);
     return 0;
 }
