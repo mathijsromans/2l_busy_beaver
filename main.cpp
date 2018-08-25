@@ -168,6 +168,24 @@ Field read_file(std::string const& filename)
     return f;
 }
 
+void move(int dir, int& px, int& py)
+{
+    switch (dir) {
+        case 1: /* up */
+            py--;
+            break;
+        case 2: /* right */
+            px++;
+            break;
+        case 3: /* down */
+            py++;
+            break;
+        case 4: /* left */
+            px--;
+            break;
+    }
+}
+
 unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsigned int dlev)
 {
     int px = 0;
@@ -255,20 +273,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
 
         /* now move */
         ++steps;
-        switch (dir) {
-            case 1: /* up */
-                py--;
-                break;
-            case 2: /* right */
-                px++;
-                break;
-            case 3: /* down */
-                py++;
-                break;
-            case 4: /* left */
-                px--;
-                break;
-        }
+        move(dir, px, py);
 
         /* quit if < 0 */
         if (px < 0 || py < 0) {
