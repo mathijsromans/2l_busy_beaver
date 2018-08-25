@@ -32,47 +32,20 @@
 void read_file(std::string const& filename, char pbuf[1024*1024])
 {
   std::ifstream infile(filename);
-
   unsigned int py = 0;
-  for( std::string line; getline( infile, line ); )
-  {
-    if (line.back() == '\n') {
-        line.pop_back();
-    }
-    strcpy(pbuf + XY(0, py), line.c_str());
-    py++;
+  for( std::string line; getline( infile, line ); ) {
+      if (line.back() == '\n') {
+          line.pop_back();
+      }
+      strcpy(pbuf + XY(0, py), line.c_str());
+      py++;
   }
 }
 
-int main(int argc, char **argv)
+void execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
 {
-    if (argc < 2) {
-        printf("Use: %s <program>\n", argv[0]);
-        return 1;
-    }
-
-    char *outbuf = nullptr;
-    unsigned int dlev;
-
-    /* get debug level */
-    if (argc > 2) {
-        dlev = static_cast<unsigned int>(atoi(argv[2]));
-        outbuf = static_cast<char *>(malloc(32256));
-        outbuf[0] = '\0';
-    } else {
-        dlev = 0;
-    }
-
-
-
-    char pbuf[1024*1024];
-    memset(pbuf, 0, 1024*1024);
-    int py = 0;
-
-    read_file(argv[1], pbuf);
-
     int px = 0;
-    py = 0;
+    int py = 0;
     int dir = 3;
 
     char mbuf[32256];
@@ -207,7 +180,33 @@ int main(int argc, char **argv)
 
         /* quit if < 0 */
         if (px < 0 || py < 0) {
-            return 0;
+            return;
         }
     }
+}
+
+int main(int argc, char **argv)
+{
+    if (argc < 2) {
+        printf("Use: %s <program>\n", argv[0]);
+        return 1;
+    }
+
+    char *outbuf = nullptr;
+    unsigned int dlev;
+
+    /* get debug level */
+    if (argc > 2) {
+        dlev = static_cast<unsigned int>(atoi(argv[2]));
+        outbuf = static_cast<char *>(malloc(32256));
+        outbuf[0] = '\0';
+    } else {
+        dlev = 0;
+    }
+
+    char pbuf[1024*1024];
+    memset(pbuf, 0, 1024*1024);
+    read_file(argv[1], pbuf);
+    execute(pbuf, outbuf, dlev);
+    return 0;
 }
