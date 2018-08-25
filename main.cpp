@@ -23,9 +23,26 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <string>
 #include <unistd.h>
 
 #define XY(x,y) (((y)*1024)+(x))
+
+void read_file(std::string const& filename, char pbuf[1024*1024])
+{
+  std::ifstream infile(filename);
+
+  unsigned int py = 0;
+  for( std::string line; getline( infile, line ); )
+  {
+    if (line.back() == '\n') {
+        line.pop_back();
+    }
+    strcpy(pbuf + XY(0, py), line.c_str());
+    py++;
+  }
+}
 
 int main(int argc, char **argv)
 {
@@ -52,30 +69,7 @@ int main(int argc, char **argv)
     memset(pbuf, 0, 1024*1024);
     int py = 0;
 
-    /* read in the file */
-    FILE *pinp = fopen(argv[1], "r");
-    if (!pinp) {
-        perror("fopen");
-        return 1;
-    }
-
-    while (!feof(pinp)) {
-        char pline[1024];
-        if (!fgets(pline, 1024, pinp)) {
-          break;
-        }
-
-        size_t ostrlen = strlen(pline);
-        if (pline[ostrlen-1] == '\n') {
-            pline[ostrlen-1] = '\0';
-        }
-
-        strcpy(pbuf + XY(0, py), pline);
-
-        py++;
-    }
-
-    fclose(pinp);
+    read_file(argv[1], pbuf);
 
     int px = 0;
     py = 0;
