@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -151,6 +152,15 @@ Field next(Field const& orig)
         }
     }
     return f;
+}
+
+constexpr unsigned int pow(unsigned int a, unsigned int b)
+{
+    unsigned int r = 1;
+    for ( unsigned int i = 0; i != b; ++i) {
+        r *= a;
+    }
+    return r;
 }
 
 Field read_file(std::string const& filename)
@@ -291,18 +301,24 @@ int main(int argc, char **argv)
     }
 
 //    Field f = read_file(argv[1]);
-    Field orig = first_field(3);
+    const unsigned int size = 5;
+    Field orig = first_field(size);
     Field f = orig;
     unsigned int iter = 0;
     unsigned int max_steps = 0;
     do
     {
-        f.print();
-        unsigned int steps = execute(f, outbuf, 100, 400);
-        printf("Total steps: %d\n", steps);
+//        f.print();
+        unsigned int steps = execute(f, outbuf, 100, 0);
+//        printf("Total steps: %d\n", steps);
         max_steps = std::max(max_steps, steps);
         f = next(f);
         ++iter;
+        if (iter % 100 == 0) {
+            const unsigned int total_steps = pow(3, (size-1)*(size-1));
+            printf("iter = %d / %d (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
+            fflush(stdout);
+        }
     }
     while (f != orig);
     printf("Number of fields: %d, maximum number of steps: %d\n", iter, max_steps);
