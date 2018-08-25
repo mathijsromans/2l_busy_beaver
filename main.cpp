@@ -29,20 +29,58 @@
 
 #define XY(x,y) (((y)*1024)+(x))
 
-void read_file(std::string const& filename, char pbuf[1024*1024])
+class Field
 {
-  std::ifstream infile(filename);
-  unsigned int py = 0;
-  for( std::string line; getline( infile, line ); ) {
-      if (line.back() == '\n') {
-          line.pop_back();
-      }
-      strcpy(pbuf + XY(0, py), line.c_str());
-      py++;
-  }
+public:
+    char get(int x, int y) const
+    {
+        return pbuf[XY(x, y)];
+    }
+
+    void set(int x, int y, char c)
+    {
+        pbuf[XY(x, y)] = c;
+    }
+
+    void set(int y, std::string const& line)
+    {
+        strcpy(pbuf + XY(0, y), line.c_str());
+    }
+
+    void print(int px, int py) const
+    {
+        for (int y = 0; get(0, y) != '\0' && y <= 1024; y++) {
+           for (int x = 0; get(0, x) != '\0' && x <= 1024; x++) {
+                char c = get(x, y);
+                if( x == px && y == py ) {
+                    c = '@';
+                }
+                printf("%c", c);
+            }
+            printf("\n");
+        }
+    }
+
+private:
+    char pbuf[1024*1024];
+};
+
+Field read_file(std::string const& filename)
+{
+    Field f;
+    std::ifstream infile(filename);
+    int y = 0;
+    for( std::string line; getline( infile, line ); ) {
+        if (line.back() == '\n') {
+            line.pop_back();
+        }
+        f.set(y, line);
+        y++;
+    }
+    return f;
 }
 
-unsigned int execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
+unsigned int execute(Field const& f, char *outbuf, unsigned int dlev)
 {
     int px = 0;
     int py = 0;
@@ -52,10 +90,9 @@ unsigned int execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
     memset(mbuf, 0, 32256);
     int mloc = 2;
 
-    char prev;
     unsigned int steps = 1;
     while(true) {
-        switch(pbuf[XY(px, py)]) {
+        switch(f.get(px, py)) {
             case '+': /* branch */
                 /* go back */
                --steps;
@@ -118,43 +155,10 @@ unsigned int execute(char pbuf[1024*1024], char *outbuf, unsigned int dlev)
                 break;
         }
 
-        int vx, vy, vye;
-        int ovx = 1024;
-        int ovy = 1024;
-
         /* if debugging, output */
         if (dlev != 0) {
-            /*system("clear");*/
-
-            /* center with a screen at 80x25 */
-            vx = px / 40;
-            vx *= 40;
-            vx -= 40;
-            vx = (vx < 0) ? 0 : vx;
-            vy = py / 12;
-            vy *= 12;
-            vy -= 12;
-            vy = (vy < 0) ? 0 : vy;
-            vye = vy + 25;
-
-            /* only blank the screen if necessary */
-            if (ovx != vx || ovy != vy) {
-                printf("\033[2J");  /* clear the screen */
-                fflush(stdout);
-            }
-            ovx = vx;
-            ovy = vy;
-
-            printf("\033[0;0f"); /* go to the top-left */
+            f.print(px, py);
             fflush(stdout);
-
-            prev = pbuf[XY(px, py)];
-            pbuf[XY(px, py)] = '@';
-            for (int oy = vy; pbuf[XY(0, oy)] != '\0' && oy <= vye; oy++) {
-                printf("%.*s\n", 80, pbuf + XY(vx, oy));
-            }
-            pbuf[XY(px, py)] = prev;
-
             //printf("\n%s\n", outbuf);
             printf("%d\n\n", steps);
 
@@ -206,8 +210,8 @@ int main(int argc, char **argv)
 
     char pbuf[1024*1024];
     memset(pbuf, 0, 1024*1024);
-    read_file(argv[1], pbuf);
-    unsigned int steps = execute(pbuf, outbuf, dlev);
+    Field f = read_file(argv[1]);
+    unsigned int steps = execute(f, outbuf, dlev);
     printf("Total steps: %d\n", steps);
 
     return 0;
