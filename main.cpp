@@ -218,13 +218,10 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
                 }
 
                 if (mbuf[mloc]) {
-                    dir++;
+                    dir = (dir+1)%4; // turn right
                 } else {
-                    dir--;
+                    dir = (dir+3)%4; // turn left
                 }
-
-                if (dir == -1) dir = 3;
-                if (dir == 4) dir = 0;
                 break;
 
             case '*': /* memory operator */
