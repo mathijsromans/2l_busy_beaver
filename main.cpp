@@ -28,14 +28,19 @@
 #include <string>
 #include <unistd.h>
 
-#define XY(x,y) (((y)*1024)+(x))
+const int max_size = 1024;
+
+int XY(int x, int y)
+{
+    return y*max_size+x;
+}
 
 class Field
 {
 public:
     Field()
     {
-        memset(pbuf, 0, 1024*1024);
+        memset(pbuf, 0, max_size*max_size);
     }
 
     bool operator==(Field const& other) const
@@ -66,8 +71,8 @@ public:
     int size() const
     {
         int sz = 0;
-        for (int y = 0; get(0, y) != '\0' && y <= 1024; y++) {
-           for (int x = 0; get(0, x) != '\0' && x <= 1024; x++) {
+        for (int y = 0; get(0, y) != '\0' && y <= max_size; y++) {
+           for (int x = 0; get(0, x) != '\0' && x <= max_size; x++) {
                char c = get(x,y);
                if (c == '+' || c == '*') {
                    sz = std::max(sz, x);
@@ -85,8 +90,8 @@ public:
 
     void print(int px, int py) const
     {
-        for (int y = 0; get(0, y) != '\0' && y <= 1024; y++) {
-           for (int x = 0; get(0, x) != '\0' && x <= 1024; x++) {
+        for (int y = 0; get(0, y) != '\0' && y <= max_size; y++) {
+           for (int x = 0; get(0, x) != '\0' && x <= max_size; x++) {
                 char c = get(x, y);
                 if( x == px && y == py ) {
                     c = '@';
@@ -99,7 +104,7 @@ public:
     }
 
 private:
-    char pbuf[1024*1024];
+    char pbuf[max_size*max_size];
 };
 
 Field first_field(int size)
@@ -301,7 +306,7 @@ int main(int argc, char **argv)
     }
 
 //    Field f = read_file(argv[1]);
-    const unsigned int size = 5;
+    const unsigned int size = 4;
     Field orig = first_field(size);
     Field f = orig;
     unsigned int iter = 0;
