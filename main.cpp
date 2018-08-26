@@ -28,7 +28,7 @@
 #include <string>
 #include <unistd.h>
 
-const int max_size = 1024;
+const int max_size = 10;
 
 int XY(int x, int y)
 {
@@ -217,7 +217,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
     memset(mbuf, 0, 32256);
     int mloc = 32256/2;
 
-    unsigned int steps = 1;
+    unsigned int steps = 0;
     try {
         while(true) {
             int next_x = px;
@@ -282,7 +282,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
             }
         }
     } catch (ExitException const&) {
-        return steps-1;
+        return steps;
     }
 }
 
@@ -305,10 +305,14 @@ int main(int argc, char **argv)
         dlev = 0;
     }
 
-//    Field f = read_file(argv[1]);
-    const unsigned int size = 4;
+//    Field ff = read_file(argv[1]);
+//    execute(ff, outbuf, 100, 10);
+//    return 0;
+
+    const unsigned int size = 5;
     Field orig = first_field(size);
     Field f = orig;
+    Field best_field = orig;
     unsigned int iter = 0;
     unsigned int max_steps = 0;
     do
@@ -316,7 +320,11 @@ int main(int argc, char **argv)
 //        f.print();
         unsigned int steps = execute(f, outbuf, 100, 0);
 //        printf("Total steps: %d\n", steps);
-        max_steps = std::max(max_steps, steps);
+        if ( steps > max_steps ) {
+            max_steps = steps;
+            best_field = f;
+        }
+
         f = next(f);
         ++iter;
         if (iter % 100 == 0) {
@@ -327,5 +335,6 @@ int main(int argc, char **argv)
     }
     while (f != orig);
     printf("Number of fields: %d, maximum number of steps: %d\n", iter, max_steps);
+    best_field.print();
     return 0;
 }
