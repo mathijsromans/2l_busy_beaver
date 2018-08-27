@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O2")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O2 -g")
+set(CMAKE_VERBOSE_MAKEFILE ON)
 message(${CMAKE_CXX_FLAGS_RELEASE})
 
 project(2l_busy_beaver)
