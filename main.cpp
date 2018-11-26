@@ -6,59 +6,44 @@
 #include <string>
 #include <unistd.h>
 
-const int max_size = 10;
-
+template <unsigned int N>
 int XY(int x, int y)
 {
-    return y*max_size+x;
+    return y*N+x;
 }
 
+template <unsigned int N>
 class Field
 {
 public:
     Field()
     {
-        memset(pbuf, 0, max_size*max_size);
+        memset(pbuf, 0, N*N);
     }
 
-    bool operator==(Field const& other) const
+    bool operator==(Field<N> const& other) const
     {
         return std::equal(std::begin(pbuf), std::end(pbuf), std::begin(other.pbuf));
     }
 
-    bool operator!=(Field const& other) const
+    bool operator!=(Field<N> const& other) const
     {
         return !(*this == other);
     }
 
     char get(int x, int y) const
     {
-        return pbuf[XY(x, y)];
+        return pbuf[XY<N>(x, y)];
     }
 
     void set(int x, int y, char c)
     {
-        pbuf[XY(x, y)] = c;
+        pbuf[XY<N>(x, y)] = c;
     }
 
-    void set(int y, std::string const& line)
+    constexpr unsigned int size()
     {
-        strcpy(pbuf + XY(0, y), line.c_str());
-    }
-
-    int size() const
-    {
-        int sz = 0;
-        for (int y = 0; get(0, y) != '\0' && y <= max_size; y++) {
-           for (int x = 0; get(0, x) != '\0' && x <= max_size; x++) {
-               char c = get(x,y);
-               if (c == '+' || c == '*') {
-                   sz = std::max(sz, x);
-                   sz = std::max(sz, y);
-               }
-           }
-        }
-        return sz;
+        return N;
     }
 
     void print() const
@@ -68,8 +53,8 @@ public:
 
     void print(int px, int py) const
     {
-        for (int y = 0; get(0, y) != '\0' && y <= max_size; y++) {
-           for (int x = 0; get(0, x) != '\0' && x <= max_size; x++) {
+        for (int y = 0; y < N; y++) {
+           for (int x = 0; x < N; x++) {
                 char c = get(x, y);
                 if( x == px && y == py ) {
                     c = '@';
@@ -82,31 +67,25 @@ public:
     }
 
 private:
-    char pbuf[max_size*max_size];
+    char pbuf[N*N];
 };
 
-Field first_field(int size)
+template <unsigned int N>
+Field<N> first_field()
 {
-    Field f;
-    for (int y = 0; y != size-1; y++) {
-        for (int x = 0; x != size-1; x++) {
+    Field<N> f;
+    for (int y = 0; y != N; y++) {
+        for (int x = 0; x != N; x++) {
             f.set(x, y, ' ');
         }
-    }
-    for( int i = 0; i != size; ++i )
-    {
-        f.set(i, size-1, '+');
-        f.set(size-1, i, '+');
-        f.set(i, size, '\0');
-        f.set(size, i, '\0');
     }
     return f;
 }
 
-Field next(Field const& orig)
+template <unsigned int N>
+Field<N> next(Field<N> const& orig)
 {
-    Field f = orig;
-    int size = f.size();
+    Field<N> f = orig;
     int x = 0;
     int y = 0;
     bool done = false;
@@ -125,9 +104,9 @@ Field next(Field const& orig)
                 done = true;
                 break;
         }
-        x = (x+1) % size;
+        x = (x+1) % N;
         if ( x == 0 ) {
-            y = (y+1) % size;
+            y = (y+1) % N;
             if ( y == 0 )
             {
                 done = true;
@@ -146,9 +125,10 @@ constexpr unsigned long powr(unsigned long a, unsigned long b)
     return r;
 }
 
-Field read_file(std::string const& filename)
+template <unsigned int N>
+Field<N> read_file(std::string const& filename)
 {
-    Field f;
+    Field<N> f;
     std::ifstream infile(filename);
     int y = 0;
     for( std::string line; getline( infile, line ); ) {
@@ -161,6 +141,7 @@ Field read_file(std::string const& filename)
     return f;
 }
 
+template <unsigned int N>
 void move(int dir, int& px, int& py, bool& out_of_bounds)
 {
     switch (dir) {
@@ -178,10 +159,11 @@ void move(int dir, int& px, int& py, bool& out_of_bounds)
             break;
     }
     /* quit if < 0 */
-    out_of_bounds = px < 0 || py < 0;
+    out_of_bounds = px < 0 || py < 0 || px >= N || py >= N;
 }
 
-unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsigned int dlev)
+template <unsigned int N>
+unsigned int execute(Field<N> const& f, char *outbuf, unsigned int max_steps, unsigned int dlev)
 {
     int px = 0;
     int py = -1;
@@ -197,7 +179,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
         int next_x = px;
         int next_y = py;
         bool out_of_bounds = false;
-        move(dir, next_x, next_y, out_of_bounds);
+        move<N>(dir, next_x, next_y, out_of_bounds);
         if (out_of_bounds) {
             return steps;
         }
@@ -209,7 +191,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
             }
             next_x = px;
             next_y = py;
-            move(dir, next_x, next_y, out_of_bounds);
+            move<N>(dir, next_x, next_y, out_of_bounds);
             if (out_of_bounds) {
                 return steps;
             }
@@ -284,17 +266,17 @@ int main(int argc, char **argv)
         outbuf = static_cast<char *>(malloc(32256));
         outbuf[0] = '\0';
     } else {
-        dlev = 0;
+        dlev = 1;
     }
 
-//    Field ff = read_file(argv[1]);
+//    Field<SIZE> ff = read_file(argv[1]);
 //    execute(ff, outbuf, 100, 10);
 //    return 0;
 
-    const unsigned int size = 6;
-    Field orig = first_field(size);
-    Field f = orig;
-    Field best_field = orig;
+    const unsigned int SIZE = 5;
+    Field<SIZE> orig = first_field<SIZE>();
+    Field<SIZE> f = orig;
+    Field<SIZE> best_field = orig;
     unsigned long iter = 0;
     unsigned int max_steps = 0;
     do
@@ -312,7 +294,7 @@ int main(int argc, char **argv)
         f = next(f);
         ++iter;
         if (iter % 10000000 == 0) {
-            const unsigned long total_steps = powr(3, (size-1)*(size-1));
+            const unsigned long total_steps = powr(3, (SIZE)*(SIZE));
             printf("iter = %ld / %ld (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
             fflush(stdout);
         }
