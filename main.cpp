@@ -1,25 +1,3 @@
-/*
- * Copyright (c) 2004, 2005 Gregor Richards
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -159,10 +137,10 @@ Field next(Field const& orig)
     return f;
 }
 
-constexpr unsigned int pow(unsigned int a, unsigned int b)
+constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
-    unsigned int r = 1;
-    for ( unsigned int i = 0; i != b; ++i) {
+    unsigned long r = 1;
+    for ( unsigned long i = 0; i != b; ++i) {
         r *= a;
     }
     return r;
@@ -271,7 +249,7 @@ unsigned int execute(Field const& f, char *outbuf, unsigned int max_steps, unsig
                 }
                 if (mloc < 0 || mloc >= mem_size)
                 {
-                    return steps;
+                    return 0;
                 }
 //            }
         }
@@ -317,7 +295,7 @@ int main(int argc, char **argv)
     Field orig = first_field(size);
     Field f = orig;
     Field best_field = orig;
-    unsigned int iter = 0;
+    unsigned long iter = 0;
     unsigned int max_steps = 0;
     do
     {
@@ -325,20 +303,22 @@ int main(int argc, char **argv)
         unsigned int steps = execute(f, outbuf, 400, 0);
 //        printf("Total steps: %d\n", steps);
         if ( steps > max_steps ) {
+            printf("Found new best with total steps: %d\n", steps);
+            f.print();
             max_steps = steps;
             best_field = f;
         }
 
         f = next(f);
         ++iter;
-        if (iter % 10000 == 0) {
-            const unsigned int total_steps = pow(3, (size-1)*(size-1));
-            printf("iter = %d / %d (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
+        if (iter % 10000000 == 0) {
+            const unsigned long total_steps = powr(3, (size-1)*(size-1));
+            printf("iter = %ld / %ld (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
             fflush(stdout);
         }
     }
     while (f != orig);
-    printf("Number of fields: %d, maximum number of steps: %d\n", iter, max_steps);
+    printf("Number of fields: %ld, maximum number of steps: %d\n", iter, max_steps);
     best_field.print();
     return 0;
 }
