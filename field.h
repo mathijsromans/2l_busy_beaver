@@ -19,9 +19,18 @@ class Pos
 {
 public:
     int m_x, m_y;
+
     Pos(int x, int y) : m_x(x), m_y(y) {}
-    int get() const { return m_y*N + m_x; }
-    bool operator==(Pos other) const { return m_x == other.m_x && m_y == other.m_y;}
+
+    int get() const
+    {
+        return m_y*N + m_x;
+    }
+
+    bool operator==(Pos other) const
+    {
+        return m_x == other.m_x && m_y == other.m_y;
+    }
 
     void move(int d, bool& out_of_bounds)
     {

@@ -37,58 +37,66 @@ public:
 };
 
 template <int N>
-unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dlev)
+class Run
 {
-    State<N> s;
-    for(unsigned int steps = 0; steps != max_steps; ++steps) {
-        while(true) {
-            Pos<N> next = s.pos;
-            bool out_of_bounds = false;
-            next.move(s.d, out_of_bounds);
-            if (out_of_bounds) {
-                return steps;
-            }
-            if (f.get(next) != '+') {
-                s.pos = next;
-                break;
-            }
-            if (s.mbuf[s.mloc]) {
-                s.d = (s.d+1)%4; // turn right
-            } else {
-                s.d = (s.d+3)%4; // turn left
-            }
-        }
-        if (f.get(s.pos) == '*') {
-            switch (s.d) {
-                case 0: /* up */
-                    s.mloc--;
-                    break;
-                case 1: /* right */
-                    s.mbuf[s.mloc]++;
-                    break;
-                case 2: /* down */
-                    s.mloc++;
-                    break;
-                case 3: /* left */
-                    s.mbuf[s.mloc]--;
-                    break;
-            }
-            if (s.memory_out_of_bounds())
-            {
-                return 0;
-            }
-        }
+private:
+    Field<N> const& m_f;
+public:
+    explicit Run(Field<N> const& f) : m_f(f) {}
 
-        /* if debugging, output */
-        if (dlev != 0) {
-            f.print(s.pos);
-            fflush(stdout);
-            printf("%d\n\n", steps);
-            usleep(1000000 / dlev);
+    unsigned int execute(unsigned int max_steps, unsigned int dlev)
+    {
+        State<N> s;
+        for(unsigned int steps = 0; steps != max_steps; ++steps) {
+            while(true) {
+                Pos<N> next = s.pos;
+                bool out_of_bounds = false;
+                next.move(s.d, out_of_bounds);
+                if (out_of_bounds) {
+                    return steps;
+                }
+                if (m_f.get(next) != '+') {
+                    s.pos = next;
+                    break;
+                }
+                if (s.mbuf[s.mloc]) {
+                    s.d = (s.d+1)%4; // turn right
+                } else {
+                    s.d = (s.d+3)%4; // turn left
+                }
+            }
+            if (m_f.get(s.pos) == '*') {
+                switch (s.d) {
+                    case 0: /* up */
+                        s.mloc--;
+                        break;
+                    case 1: /* right */
+                        s.mbuf[s.mloc]++;
+                        break;
+                    case 2: /* down */
+                        s.mloc++;
+                        break;
+                    case 3: /* left */
+                        s.mbuf[s.mloc]--;
+                        break;
+                }
+                if (s.memory_out_of_bounds())
+                {
+                    return 0;
+                }
+            }
+
+            /* if debugging, output */
+            if (dlev != 0) {
+                m_f.print(s.pos);
+                fflush(stdout);
+                printf("%d\n\n", steps);
+                usleep(1000000 / dlev);
+            }
         }
+        return 0;
     }
-    return 0;
-}
+};
 
 int myPow(int x, int p) {
   if (p == 0) return 1;
@@ -131,7 +139,8 @@ int main()
     unsigned int max_steps = 0;
     do
     {
-        unsigned int steps = execute(f, 400, 0);
+        Run<SIZE> r(f);
+        unsigned int steps = r.execute(400, 0);
         if ( steps > max_steps ) {
             printf("Found new best with total steps: %d\n", steps);
             f.print();
