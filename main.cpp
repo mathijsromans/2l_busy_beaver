@@ -20,7 +20,7 @@ constexpr unsigned long powr(unsigned long a, unsigned long b)
 }
 
 template <unsigned int N>
-void move(int dir, int& px, int& py, bool& out_of_bounds)
+void move(int dir, int& px, int& py)
 {
     switch (dir) {
         case 0: /* up */
@@ -36,8 +36,12 @@ void move(int dir, int& px, int& py, bool& out_of_bounds)
             px--;
             break;
     }
-    /* quit if < 0 */
-    out_of_bounds = px < 0 || py < 0 || px >= N || py >= N;
+}
+
+template <unsigned int N>
+bool out_of_bounds(int px, int py)
+{
+    return px < 0 || py < 0 || px >= N || py >= N;
 }
 
 template <unsigned int N>
@@ -56,9 +60,8 @@ unsigned int execute(Field<N> const& f, char *outbuf, unsigned int max_steps, un
     while(true) {
         int next_x = px;
         int next_y = py;
-        bool out_of_bounds = false;
-        move<N>(dir, next_x, next_y, out_of_bounds);
-        if (out_of_bounds) {
+        move<N>(dir, next_x, next_y);
+        if (out_of_bounds<N>(next_x, next_y)) {
             return steps;
         }
         while(f.get(next_x, next_y) == '+') {
@@ -69,8 +72,8 @@ unsigned int execute(Field<N> const& f, char *outbuf, unsigned int max_steps, un
             }
             next_x = px;
             next_y = py;
-            move<N>(dir, next_x, next_y, out_of_bounds);
-            if (out_of_bounds) {
+            move<N>(dir, next_x, next_y);
+            if (out_of_bounds<N>(next_x, next_y)) {
                 return steps;
             }
         }
@@ -78,40 +81,24 @@ unsigned int execute(Field<N> const& f, char *outbuf, unsigned int max_steps, un
         py = next_y;
         ++steps;
         if (f.get(px, py) == '*') {
-//            if (mloc == 1 && (dir == 1 || dir == 3)) {
-//                /* IO */
-//                if (mbuf[0] == 0) { /* input */
-//                    mbuf[0] = static_cast<char>(getchar());
-//                } else { /* output */
-//                    /* if debugging, buffer output */
-//                    if (dlev != 0) {
-//                        sprintf(outbuf+strlen(outbuf), "%c", mbuf[0]);
-//                    } else {
-//                        putchar(mbuf[0]);
-//                        fflush(stdout);
-//                    }
-//                    mbuf[0] = 0;
-//                }
-//            } else { /* not IO */
-                switch (dir) {
-                    case 0: /* up */
-                        mloc--;
-                        break;
-                    case 1: /* right */
-                        mbuf[mloc]++;
-                        break;
-                    case 2: /* down */
-                        mloc++;
-                        break;
-                    case 3: /* left */
-                        mbuf[mloc]--;
-                        break;
-                }
-                if (mloc < 0 || mloc >= mem_size)
-                {
-                    return 0;
-                }
-//            }
+            switch (dir) {
+                case 0: /* up */
+                    mloc--;
+                    break;
+                case 1: /* right */
+                    mbuf[mloc]++;
+                    break;
+                case 2: /* down */
+                    mloc++;
+                    break;
+                case 3: /* left */
+                    mbuf[mloc]--;
+                    break;
+            }
+            if (mloc < 0 || mloc >= mem_size)
+            {
+                return 0;
+            }
         }
 
         /* if debugging, output */
@@ -138,6 +125,12 @@ void test_next()
 {
     const unsigned int SIZE = 4;
     Field<SIZE> orig = first_field<SIZE>();
+
+    Field<SIZE> a = orig;
+    for (unsigned i = 0; i != 10; ++i) {
+        a.print();
+        a.next();
+    }
 
     unsigned int i = 1;
     Field<SIZE> f = orig;

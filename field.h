@@ -47,7 +47,7 @@ public:
     {
         const char order[] = {' ', '+', '*'};
         int sizeOfArray = sizeof(order) / sizeof(order[0]);
-        for (unsigned int i = 0; i != N*N; ++i) {
+        for (unsigned int i = N*N-1; i != static_cast<unsigned>(-1); --i) {
             for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
                 if (pbuf[i] == order[j]) {
                     pbuf[i] = order[j+1];
