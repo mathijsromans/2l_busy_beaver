@@ -15,6 +15,50 @@ int XY(int x, int y)
 }
 
 template <int N>
+class Pos
+{
+public:
+    int m_x, m_y;
+    Pos(int x, int y) : m_x(x), m_y(y) {}
+    int get() const { return m_y*N + m_x; }
+    bool operator==(Pos other) const { return m_x == other.m_x && m_y == other.m_y;}
+
+    void move(int d, bool& out_of_bounds)
+    {
+        switch (d) {
+            case 0: /* up */
+                if ( m_y == 0 ) {
+                    out_of_bounds = true;
+                    return;
+                }
+                --m_y;
+                break;
+            case 1: /* right */
+                if ( m_x == N-1 ) {
+                    out_of_bounds = true;
+                    return;
+                }
+                ++m_x;
+                break;
+            case 2: /* down */
+                if ( m_y == N-1 ) {
+                    out_of_bounds = true;
+                    return;
+                }
+                ++m_y;
+                break;
+            case 3: /* left */
+                if ( m_x == 0 ) {
+                    out_of_bounds = true;
+                    return;
+                }
+                --m_x;
+                break;
+        }
+    }
+};
+
+template <int N>
 class Field
 {
 public:
@@ -31,6 +75,11 @@ public:
     bool operator!=(Field<N> const& other) const
     {
         return !(*this == other);
+    }
+
+    char get(Pos<N> p) const
+    {
+        return pbuf[p.get()];
     }
 
     char get(int x, int y) const
@@ -65,15 +114,15 @@ public:
 
     void print() const
     {
-        print(-1, -1);
+        print(Pos<N>{-1, -1});
     }
 
-    void print(int px, int py) const
+    void print(Pos<N> p) const
     {
         for (int y = 0; y != N; y++) {
            for (int x = 0; x != N; x++) {
                 char c = get(x, y);
-                if( x == px && y == py ) {
+                if( Pos<N>{x, y} == p ) {
                     c = '@';
                 }
                 printf("%c", c);

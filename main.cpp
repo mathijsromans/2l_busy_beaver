@@ -20,36 +20,11 @@ constexpr unsigned long powr(unsigned long a, unsigned long b)
     return r;
 }
 
-template <unsigned int N>
-void move(int d, int& x, int& y)
-{
-    switch (d) {
-        case 0: /* up */
-            y--;
-            break;
-        case 1: /* right */
-            x++;
-            break;
-        case 2: /* down */
-            y++;
-            break;
-        case 3: /* left */
-            x--;
-            break;
-    }
-}
-
 template <int N>
-bool out_of_bounds(int x, int y)
-{
-    return x < 0 || y < 0 || x >= N || y >= N;
-}
-
 class State
 {
 public:
-    int x = 0;
-    int y = -1;
+    Pos<N> pos{0, -1};
     int d = 2;
     const static int mem_size = 128;
     std::array<char, mem_size> mbuf{};
@@ -59,24 +34,22 @@ public:
     {
         return mloc < 0 || mloc >= mem_size;
     }
-
 };
 
 template <int N>
 unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dlev)
 {
-    State s;
+    State<N> s;
     for(unsigned int steps = 0; steps != max_steps; ++steps) {
         while(true) {
-            int next_x = s.x;
-            int next_y = s.y;
-            move<N>(s.d, next_x, next_y);
-            if (out_of_bounds<N>(next_x, next_y)) {
+            Pos<N> next = s.pos;
+            bool out_of_bounds = false;
+            next.move(s.d, out_of_bounds);
+            if (out_of_bounds) {
                 return steps;
             }
-            if (f.get(next_x, next_y) != '+') {
-                s.x = next_x;
-                s.y = next_y;
+            if (f.get(next) != '+') {
+                s.pos = next;
                 break;
             }
             if (s.mbuf[s.mloc]) {
@@ -85,7 +58,7 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
                 s.d = (s.d+3)%4; // turn left
             }
         }
-        if (f.get(s.x, s.y) == '*') {
+        if (f.get(s.pos) == '*') {
             switch (s.d) {
                 case 0: /* up */
                     s.mloc--;
@@ -108,7 +81,7 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
 
         /* if debugging, output */
         if (dlev != 0) {
-            f.print(s.x, s.y);
+            f.print(s.pos);
             fflush(stdout);
             printf("%d\n\n", steps);
             usleep(1000000 / dlev);
