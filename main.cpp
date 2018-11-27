@@ -54,6 +54,12 @@ public:
     const static int mem_size = 128;
     std::array<char, mem_size> mbuf{};
     int mloc = mem_size/2;
+
+    bool memory_out_of_bounds() const
+    {
+        return mloc < 0 || mloc >= mem_size;
+    }
+
 };
 
 template <int N>
@@ -63,27 +69,24 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
 
     unsigned int steps = 0;
     while(true) {
-        int next_x = s.x;
-        int next_y = s.y;
-        move<N>(s.d, next_x, next_y);
-        if (out_of_bounds<N>(next_x, next_y)) {
-            return steps;
-        }
-        while(f.get(next_x, next_y) == '+') {
+        while(true) {
+            int next_x = s.x;
+            int next_y = s.y;
+            move<N>(s.d, next_x, next_y);
+            if (out_of_bounds<N>(next_x, next_y)) {
+                return steps;
+            }
+            if (f.get(next_x, next_y) != '+') {
+                s.x = next_x;
+                s.y = next_y;
+                break;
+            }
             if (s.mbuf[s.mloc]) {
                 s.d = (s.d+1)%4; // turn right
             } else {
                 s.d = (s.d+3)%4; // turn left
             }
-            next_x = s.x;
-            next_y = s.y;
-            move<N>(s.d, next_x, next_y);
-            if (out_of_bounds<N>(next_x, next_y)) {
-                return steps;
-            }
         }
-        s.x = next_x;
-        s.y = next_y;
         ++steps;
         if (f.get(s.x, s.y) == '*') {
             switch (s.d) {
@@ -100,7 +103,7 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
                     s.mbuf[s.mloc]--;
                     break;
             }
-            if (s.mloc < 0 || s.mloc >= s.mem_size)
+            if (s.memory_out_of_bounds())
             {
                 return 0;
             }
