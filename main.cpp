@@ -45,7 +45,7 @@ bool out_of_bounds(int px, int py)
 }
 
 template <unsigned int N>
-unsigned int execute(Field<N> const& f, char *outbuf, unsigned int max_steps, unsigned int dlev)
+unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dlev)
 {
     int px = 0;
     int py = -1;
@@ -143,30 +143,10 @@ void test_next()
     std::cout << i << std::endl;
 }
 
-int main(int argc, char **argv)
+int main()
 {
-//    if (argc < 2) {
-//        printf("Use: %s <program>\n", argv[0]);
-//        return 1;
-//    }
 
 //    test_next();
-//    return 0;
-
-    char *outbuf = nullptr;
-    unsigned int dlev;
-
-    /* get debug level */
-    if (argc > 2) {
-        dlev = static_cast<unsigned int>(atoi(argv[2]));
-        outbuf = static_cast<char *>(malloc(32256));
-        outbuf[0] = '\0';
-    } else {
-        dlev = 1;
-    }
-
-//    Field<SIZE> ff = read_file(argv[1]);
-//    execute(ff, outbuf, 100, 10);
 //    return 0;
 
     const unsigned int SIZE = 4;
@@ -177,9 +157,7 @@ int main(int argc, char **argv)
     unsigned int max_steps = 0;
     do
     {
-//        f.print();
-        unsigned int steps = execute(f, outbuf, 400, 0);
-//        printf("Total steps: %d\n", steps);
+        unsigned int steps = execute(f, 400, 0);
         if ( steps > max_steps ) {
             printf("Found new best with total steps: %d\n", steps);
             f.print();
