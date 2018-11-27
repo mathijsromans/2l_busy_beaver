@@ -4,6 +4,8 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <iostream>
+#include <cassert>
 #include <unistd.h>
 
 template <unsigned int N>
@@ -39,6 +41,21 @@ public:
     void set(int x, int y, char c)
     {
         pbuf[XY<N>(x, y)] = c;
+    }
+
+    void next()
+    {
+        const char order[] = {' ', '+', '*'};
+        int sizeOfArray = sizeof(order) / sizeof(order[0]);
+        for (unsigned int i = 0; i != N*N; ++i) {
+            for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
+                if (pbuf[i] == order[j]) {
+                    pbuf[i] = order[j+1];
+                    return;
+                }
+            }
+            pbuf[i] = order[0];
+        }
     }
 
     constexpr unsigned int size()
@@ -77,40 +94,6 @@ Field<N> first_field()
     for (int y = 0; y != N; y++) {
         for (int x = 0; x != N; x++) {
             f.set(x, y, ' ');
-        }
-    }
-    return f;
-}
-
-template <unsigned int N>
-Field<N> next(Field<N> const& orig)
-{
-    Field<N> f = orig;
-    int x = 0;
-    int y = 0;
-    bool done = false;
-    while(!done) {
-        char c = f.get(x, y);
-        switch(c) {
-            case '+':
-                f.set(x, y, '*');
-                done = true;
-                break;
-            case '*':
-                f.set(x, y, ' ');
-                break;
-            default:
-                f.set(x, y, '+');
-                done = true;
-                break;
-        }
-        x = (x+1) % N;
-        if ( x == 0 ) {
-            y = (y+1) % N;
-            if ( y == 0 )
-            {
-                done = true;
-            }
         }
     }
     return f;
@@ -250,12 +233,37 @@ unsigned int execute(Field<N> const& f, char *outbuf, unsigned int max_steps, un
     }
 }
 
+int myPow(int x, int p) {
+  if (p == 0) return 1;
+  if (p == 1) return x;
+  return x * myPow(x, p-1);
+}
+
+void test_next()
+{
+    const unsigned int SIZE = 4;
+    Field<SIZE> orig = first_field<SIZE>();
+
+    unsigned int i = 1;
+    Field<SIZE> f = orig;
+    f.next();
+    for (; f != orig; f.next())
+    {
+        ++i;
+    }
+    assert(i == myPow(3, SIZE*SIZE));
+    std::cout << i << std::endl;
+}
+
 int main(int argc, char **argv)
 {
 //    if (argc < 2) {
 //        printf("Use: %s <program>\n", argv[0]);
 //        return 1;
 //    }
+
+    test_next();
+    return 0;
 
     char *outbuf = nullptr;
     unsigned int dlev;
@@ -291,7 +299,7 @@ int main(int argc, char **argv)
             best_field = f;
         }
 
-        f = next(f);
+        f.next();
         ++iter;
         if (iter % 10000000 == 0) {
             const unsigned long total_steps = powr(3, (SIZE)*(SIZE));
