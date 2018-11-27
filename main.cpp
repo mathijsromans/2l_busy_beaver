@@ -1,4 +1,5 @@
 #include "field.h"
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -20,82 +21,86 @@ constexpr unsigned long powr(unsigned long a, unsigned long b)
 }
 
 template <unsigned int N>
-void move(int dir, int& px, int& py)
+void move(int d, int& x, int& y)
 {
-    switch (dir) {
+    switch (d) {
         case 0: /* up */
-            py--;
+            y--;
             break;
         case 1: /* right */
-            px++;
+            x++;
             break;
         case 2: /* down */
-            py++;
+            y++;
             break;
         case 3: /* left */
-            px--;
+            x--;
             break;
     }
 }
 
-template <unsigned int N>
-bool out_of_bounds(int px, int py)
+template <int N>
+bool out_of_bounds(int x, int y)
 {
-    return px < 0 || py < 0 || px >= N || py >= N;
+    return x < 0 || y < 0 || x >= N || y >= N;
 }
 
-template <unsigned int N>
+class State
+{
+public:
+    int x = 0;
+    int y = -1;
+    int d = 2;
+    const static int mem_size = 128;
+    std::array<char, mem_size> mbuf{};
+    int mloc = mem_size/2;
+};
+
+template <int N>
 unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dlev)
 {
-    int px = 0;
-    int py = -1;
-    int dir = 2;
-
-    const int mem_size = 128;
-    char mbuf[mem_size];
-    memset(mbuf, 0, mem_size);
-    int mloc = mem_size/2;
+    State s;
 
     unsigned int steps = 0;
     while(true) {
-        int next_x = px;
-        int next_y = py;
-        move<N>(dir, next_x, next_y);
+        int next_x = s.x;
+        int next_y = s.y;
+        move<N>(s.d, next_x, next_y);
         if (out_of_bounds<N>(next_x, next_y)) {
             return steps;
         }
         while(f.get(next_x, next_y) == '+') {
-            if (mbuf[mloc]) {
-                dir = (dir+1)%4; // turn right
+            if (s.mbuf[s.mloc]) {
+                s.d = (s.d+1)%4; // turn right
             } else {
-                dir = (dir+3)%4; // turn left
+                s.d = (s.d+3)%4; // turn left
             }
-            next_x = px;
-            next_y = py;
-            move<N>(dir, next_x, next_y);
+            next_x = s.x;
+            next_y = s.y;
+            move<N>(s.d, next_x, next_y);
             if (out_of_bounds<N>(next_x, next_y)) {
                 return steps;
             }
         }
-        px = next_x;
-        py = next_y;
+        s.x = next_x;
+        s.y = next_y;
         ++steps;
-        if (f.get(px, py) == '*') {
-            switch (dir) {
+        if (f.get(s.x, s.y) == '*') {
+            switch (s.d) {
                 case 0: /* up */
-                    mloc--;
+                    s.mloc--;
                     break;
                 case 1: /* right */
-                    mbuf[mloc]++;
+                    s.mbuf[s.mloc]++;
                     break;
                 case 2: /* down */
-                    mloc++;
+                    s.mloc++;
                     break;
                 case 3: /* left */
-                    mbuf[mloc]--;
+                    s.mbuf[s.mloc]--;
                     break;
             }
-            if (mloc < 0 || mloc >= mem_size)
+            if (s.mloc < 0 || s.mloc >= s.mem_size)
             {
                 return 0;
             }
@@ -103,7 +108,7 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
 
         /* if debugging, output */
         if (dlev != 0) {
-            f.print(px, py);
+            f.print(s.x, s.y);
             fflush(stdout);
             printf("%d\n\n", steps);
             usleep(1000000 / dlev);
@@ -145,11 +150,10 @@ void test_next()
 
 int main()
 {
-
 //    test_next();
 //    return 0;
 
-    const unsigned int SIZE = 4;
+    const int SIZE = 4;
     Field<SIZE> orig = first_field<SIZE>();
     Field<SIZE> f = orig;
     Field<SIZE> best_field = orig;

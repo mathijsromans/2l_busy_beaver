@@ -8,13 +8,13 @@
 #include <cassert>
 #include <unistd.h>
 
-template <unsigned int N>
+template <int N>
 int XY(int x, int y)
 {
     return y*N+x;
 }
 
-template <unsigned int N>
+template <int N>
 class Field
 {
 public:
@@ -46,7 +46,7 @@ public:
     void next()
     {
         const char order[] = {' ', '+', '*'};
-        int sizeOfArray = sizeof(order) / sizeof(order[0]);
+        unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
         for (unsigned int i = N*N-1; i != static_cast<unsigned>(-1); --i) {
             for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
                 if (pbuf[i] == order[j]) {
@@ -58,7 +58,7 @@ public:
         }
     }
 
-    constexpr unsigned int size()
+    constexpr int size()
     {
         return N;
     }
@@ -70,8 +70,8 @@ public:
 
     void print(int px, int py) const
     {
-        for (int y = 0; y < N; y++) {
-           for (int x = 0; x < N; x++) {
+        for (int y = 0; y != N; y++) {
+           for (int x = 0; x != N; x++) {
                 char c = get(x, y);
                 if( x == px && y == py ) {
                     c = '@';
@@ -87,7 +87,7 @@ private:
     char pbuf[N*N];
 };
 
-template <unsigned int N>
+template <int N>
 Field<N> first_field()
 {
     Field<N> f;
@@ -99,7 +99,7 @@ Field<N> first_field()
     return f;
 }
 
-template <unsigned int N>
+template <int N>
 Field<N> read_file(std::string const& filename)
 {
     Field<N> f;
