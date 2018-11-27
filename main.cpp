@@ -66,9 +66,7 @@ template <int N>
 unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dlev)
 {
     State s;
-
-    unsigned int steps = 0;
-    while(true) {
+    for(unsigned int steps = 0; steps != max_steps; ++steps) {
         while(true) {
             int next_x = s.x;
             int next_y = s.y;
@@ -87,7 +85,6 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
                 s.d = (s.d+3)%4; // turn left
             }
         }
-        ++steps;
         if (f.get(s.x, s.y) == '*') {
             switch (s.d) {
                 case 0: /* up */
@@ -116,11 +113,8 @@ unsigned int execute(Field<N> const& f, unsigned int max_steps, unsigned int dle
             printf("%d\n\n", steps);
             usleep(1000000 / dlev);
         }
-
-        if (steps > max_steps) {
-            return 0;
-        }
     }
+    return 0;
 }
 
 int myPow(int x, int p) {
