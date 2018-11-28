@@ -22,14 +22,24 @@ public:
 
     Pos(int x, int y) : m_x(x), m_y(y) {}
 
-    int get() const
-    {
-        return m_y*N + m_x;
-    }
-
     bool operator==(Pos other) const
     {
         return m_x == other.m_x && m_y == other.m_y;
+    }
+
+    bool operator>(Pos other) const
+    {
+        return get() > other.get();
+    }
+
+    void to_stream(std::ostream & os) const
+    {
+        os << "(" << m_x << ", " << m_y << ")";
+    }
+
+    int get() const
+    {
+        return m_y*N + m_x;
     }
 
     void move(int d, bool& out_of_bounds)
@@ -68,6 +78,13 @@ public:
 };
 
 template <int N>
+std::ostream & operator<<(std::ostream &os, Pos<N> const& p)
+{
+    p.to_stream(os);
+    return os;
+}
+
+template <int N>
 class Field
 {
 public:
@@ -91,9 +108,12 @@ public:
         return pbuf[p.get()];
     }
 
-    char get(int x, int y) const
+    char get(Pos<N> p, Pos<N>& max_pos) const
     {
-        return pbuf[XY<N>(x, y)];
+        if (p > max_pos) {
+            max_pos = p;
+        }
+        return pbuf[p.get()];
     }
 
     void set(int x, int y, char c)
@@ -126,19 +146,19 @@ public:
         print(Pos<N>{-1, -1});
     }
 
-    void print(Pos<N> p) const
+    void print(Pos<N> pos) const
     {
         for (int y = 0; y != N; y++) {
            for (int x = 0; x != N; x++) {
-                char c = get(x, y);
-                if( Pos<N>{x, y} == p ) {
+                Pos<N> p{x, y};
+                char c = get(p);
+                if( p == pos ) {
                     c = '@';
                 }
                 printf("%c", c);
             }
             printf("\n");
         }
-        printf("\n");
     }
 
 private:

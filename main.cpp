@@ -41,8 +41,10 @@ class Run
 {
 private:
     Field<N> const& m_f;
+    Pos<N> m_max_pos;
 public:
-    explicit Run(Field<N> const& f) : m_f(f) {}
+    explicit Run(Field<N> const& f) : m_f(f), m_max_pos(-1, -1) {}
+    Pos<N> max_pos() const { return m_max_pos; }
 
     unsigned int execute(unsigned int max_steps, unsigned int dlev)
     {
@@ -55,7 +57,7 @@ public:
                 if (out_of_bounds) {
                     return steps;
                 }
-                if (m_f.get(next) != '+') {
+                if (m_f.get(next, m_max_pos) != '+') {
                     s.pos = next;
                     break;
                 }
@@ -65,7 +67,7 @@ public:
                     s.d = (s.d+3)%4; // turn left
                 }
             }
-            if (m_f.get(s.pos) == '*') {
+            if (m_f.get(s.pos, m_max_pos) == '*') {
                 switch (s.d) {
                     case 0: /* up */
                         s.mloc--;
@@ -142,8 +144,10 @@ int main()
         Run<SIZE> r(f);
         unsigned int steps = r.execute(400, 0);
         if ( steps > max_steps ) {
-            printf("Found new best with total steps: %d\n", steps);
+            std::cout << "Found new best with total steps: " << steps << std::endl;
             f.print();
+            std::cout << "with max_pos " << r.max_pos() << std::endl;
+
             max_steps = steps;
             best_field = f;
         }
