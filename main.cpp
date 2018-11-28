@@ -100,10 +100,13 @@ public:
     }
 };
 
-int myPow(int x, int p) {
-  if (p == 0) return 1;
-  if (p == 1) return x;
-  return x * myPow(x, p-1);
+unsigned long myPow(unsigned long x, unsigned int p)
+{
+    unsigned long result = 1;
+    for (unsigned int i = 0; i != p; ++i) {
+        result *= x;
+    }
+    return result;
 }
 
 void test_next()
@@ -138,6 +141,7 @@ int main()
     Field<SIZE> f = orig;
     Field<SIZE> best_field = orig;
     unsigned long iter = 0;
+    unsigned long last_iter_div = -1;
     unsigned int max_steps = 0;
     do
     {
@@ -152,9 +156,14 @@ int main()
             best_field = f;
         }
 
-        f.next();
-        ++iter;
-        if (iter % 10000000 == 0) {
+        unsigned int skip_size = Pos<SIZE>(SIZE-1, SIZE-1).get() - r.max_pos().get();
+        unsigned long skip_steps = myPow(3, skip_size);
+//        std::cout << "skipping " << skip_size << " positions -> skipping " << skip_steps << " steps" << std::endl;
+        f.next(r.max_pos());
+        iter += skip_steps;
+        unsigned long iter_div = iter / 1000000;
+        if (iter_div != last_iter_div) {
+            last_iter_div = iter_div;
             const unsigned long total_steps = powr(3, (SIZE)*(SIZE));
             printf("iter = %ld / %ld (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
             fflush(stdout);
