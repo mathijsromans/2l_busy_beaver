@@ -10,6 +10,7 @@
 #include <cassert>
 #include <unistd.h>
 
+const unsigned int debug_level = 0;
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
@@ -24,8 +25,8 @@ template <int N>
 class State
 {
 public:
-    Pos<N> pos{0, -1};
-    int d = 2;
+    Pos<N> pos{-1, 0};
+    int d = 1;
     const static int mem_size = 128;
     std::array<char, mem_size> mbuf{};
     int mloc = mem_size/2;
@@ -46,7 +47,7 @@ public:
     explicit Run(Field<N> const& f) : m_f(f), m_max_pos(-1, -1) {}
     Pos<N> max_pos() const { return m_max_pos; }
 
-    unsigned int execute(unsigned int max_steps, unsigned int dlev)
+    unsigned int execute(unsigned int max_steps)
     {
         State<N> s;
         for(unsigned int steps = 0; steps != max_steps; ++steps) {
@@ -88,12 +89,11 @@ public:
                 }
             }
 
-            /* if debugging, output */
-            if (dlev != 0) {
+            if (debug_level != 0) {
                 m_f.print(s.pos);
                 fflush(stdout);
                 printf("%d\n\n", steps);
-                usleep(1000000 / dlev);
+                usleep(300000);
             }
         }
         return 0;
@@ -142,7 +142,7 @@ int main()
     do
     {
         Run<SIZE> r(f);
-        unsigned int steps = r.execute(400, 0);
+        unsigned int steps = r.execute(400);
         if ( steps > max_steps ) {
             std::cout << "Found new best with total steps: " << steps << std::endl;
             f.print();

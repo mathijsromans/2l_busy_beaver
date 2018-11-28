@@ -121,11 +121,11 @@ public:
         pbuf[XY<N>(x, y)] = c;
     }
 
-    void next()
+    void next(Pos<N> max_change_pos = Pos<N>{N-1, N-1})
     {
         const char order[] = {' ', '+', '*'};
         unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
-        for (unsigned int i = N*N-1; i != static_cast<unsigned>(-1); --i) {
+        for (unsigned int i = max_change_pos.get(); i != static_cast<unsigned>(-1); --i) {
             for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
                 if (pbuf[i] == order[j]) {
                     pbuf[i] = order[j+1];
@@ -148,12 +148,22 @@ public:
 
     void print(Pos<N> pos) const
     {
-        for (int y = 0; y != N; y++) {
-           for (int x = 0; x != N; x++) {
-                Pos<N> p{x, y};
-                char c = get(p);
-                if( p == pos ) {
-                    c = '@';
+        for (int y = -1; y != N+1; ++y) {
+            for (int x = -1; x != N+1; ++x) {
+                char c;
+                if (y == -1 || y == N) {
+                    c = '-';
+                }
+                else if (x == -1 || x == N) {
+                    c = '|';
+                }
+                else
+                {
+                    Pos<N> p{x, y};
+                    c = get(p);
+                    if( p == pos ) {
+                        c = '@';
+                    }
                 }
                 printf("%c", c);
             }
