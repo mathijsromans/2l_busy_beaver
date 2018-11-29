@@ -136,7 +136,7 @@ int main()
 //    test_next();
 //    return 0;
 
-    const int SIZE = 4;
+    const int SIZE = 5;
     Field<SIZE> orig = first_field<SIZE>();
     Field<SIZE> f = orig;
     Field<SIZE> best_field = orig;
@@ -150,21 +150,22 @@ int main()
         if ( steps > max_steps ) {
             std::cout << "Found new best with total steps: " << steps << std::endl;
             f.print();
-            std::cout << "with max_pos " << r.max_pos() << std::endl;
-
             max_steps = steps;
             best_field = f;
         }
 
         unsigned int skip_size = Pos<SIZE>(SIZE-1, SIZE-1).get() - r.max_pos().get();
-        unsigned long skip_steps = myPow(3, skip_size);
-//        std::cout << "skipping " << skip_size << " positions -> skipping " << skip_steps << " steps" << std::endl;
+        const unsigned int nr_of_symbols = 3;
+        unsigned long incr_steps = myPow(nr_of_symbols, skip_size);
+        if (debug_level) {
+            std::cout << "with max_pos " << r.max_pos() << ", skipping " << skip_size << " positions -> incrementing " << incr_steps << " steps" << std::endl;
+        }
         f.next(r.max_pos());
-        iter += skip_steps;
-        unsigned long iter_div = iter / 1000000;
-        if (iter_div != last_iter_div) {
+        iter += incr_steps;
+        unsigned long iter_div = iter / 1000000000;
+        if (iter_div != last_iter_div || debug_level != 0) {
             last_iter_div = iter_div;
-            const unsigned long total_steps = powr(3, (SIZE)*(SIZE));
+            const unsigned long total_steps = powr(3, SIZE*SIZE);
             printf("iter = %ld / %ld (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
             fflush(stdout);
         }
