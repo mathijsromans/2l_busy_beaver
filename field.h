@@ -29,7 +29,7 @@ public:
 
     bool operator>(Pos other) const
     {
-        return get() > other.get();
+        return serial() > other.serial();
     }
 
     void to_stream(std::ostream & os) const
@@ -37,7 +37,7 @@ public:
         os << "(" << m_x << ", " << m_y << ")";
     }
 
-    int get() const
+    int serial() const
     {
         return m_y*N + m_x;
     }
@@ -105,7 +105,7 @@ public:
 
     char get(Pos<N> p) const
     {
-        return pbuf[p.get()];
+        return pbuf[p.serial()];
     }
 
     char get(Pos<N> p, Pos<N>& max_pos) const
@@ -113,7 +113,7 @@ public:
         if (p > max_pos) {
             max_pos = p;
         }
-        return pbuf[p.get()];
+        return pbuf[p.serial()];
     }
 
     void set(int x, int y, char c)
@@ -121,11 +121,11 @@ public:
         pbuf[XY<N>(x, y)] = c;
     }
 
-    void next(Pos<N> max_change_pos = Pos<N>{N-1, N-1})
+    void next(int max_change_pos_serial = N*N-1)
     {
         const char order[] = {' ', '+', '*'};
         unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
-        for (unsigned int i = max_change_pos.get(); i != static_cast<unsigned>(-1); --i) {
+        for (unsigned int i = max_change_pos_serial; i != static_cast<unsigned>(-1); --i) {
             for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
                 if (pbuf[i] == order[j]) {
                     pbuf[i] = order[j+1];

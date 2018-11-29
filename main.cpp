@@ -1,5 +1,7 @@
 #include "field.h"
 #include <array>
+#include <algorithm>
+#include <bitset>
 #include <cmath>
 #include <cstdio>
 #include <chrono>
@@ -11,7 +13,7 @@
 #include <cassert>
 #include <unistd.h>
 
-const unsigned int debug_level = 0;
+const unsigned int debug_level = 1;
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
@@ -46,10 +48,31 @@ class Run
 {
 private:
     Field<N> const& m_f;
-    Pos<N> m_max_pos;
+
+    char get(Pos<N> p)
+    {
+        pos_used.set(p.serial());
+        return m_f.get(p);
+    }
+
 public:
-    explicit Run(Field<N> const& f) : m_f(f), m_max_pos(-1, -1) {}
-    Pos<N> max_pos() const { return m_max_pos; }
+    explicit Run(Field<N> const& f) : m_f(f) {}
+    int max_pos_serial() const
+    {
+
+        unsigned int i = pos_used.size()-1;
+        for(; i != static_cast<unsigned int>(-1); --i) {
+            if (pos_used.test(i)) {
+                break;
+            }
+        }
+        if (i == static_cast<unsigned int>(-1)) {
+            i = pos_used.size()-1;
+        }
+        return i;
+    }
+
+    std::bitset<N*N> pos_used;
 
     unsigned int execute(unsigned int max_steps)
     {
@@ -62,7 +85,7 @@ public:
                 if (out_of_bounds) {
                     return steps;
                 }
-                if (m_f.get(next, m_max_pos) != '+') {
+                if (get(next) != '+') {
                     s.pos = next;
                     break;
                 }
@@ -72,7 +95,7 @@ public:
                     s.d = (s.d+3)%4; // turn left
                 }
             }
-            if (m_f.get(s.pos, m_max_pos) == '*') {
+            if (get(s.pos) == '*') {
                 switch (s.d) {
                     case 0: /* up */
                         s.mloc--;
@@ -121,7 +144,7 @@ unsigned long myPow(unsigned long x, unsigned int p)
 
 void test_next()
 {
-    const unsigned int SIZE = 4;
+    const unsigned int SIZE = 3;
     Field<SIZE> orig = first_field<SIZE>();
 
     Field<SIZE> a = orig;
@@ -146,7 +169,7 @@ int main()
 //    test_next();
 //    return 0;
 
-    const int SIZE = 5;
+    const int SIZE = 4;
     unsigned long iter = 0;
     unsigned long iter_start = 0;
     unsigned long last_iter_div = -1;
@@ -166,13 +189,13 @@ int main()
             best_field = f;
         }
 
-        unsigned int skip_size = Pos<SIZE>(SIZE-1, SIZE-1).get() - r.max_pos().get();
+        unsigned int skip_size = Pos<SIZE>(SIZE-1, SIZE-1).serial() - r.max_pos_serial();
         const unsigned int nr_of_symbols = 3;
         unsigned long incr_steps = myPow(nr_of_symbols, skip_size);
         if (debug_level) {
-            std::cout << "with max_pos " << r.max_pos() << ", skipping " << skip_size << " positions -> incrementing " << incr_steps << " steps" << std::endl;
+            std::cout << "with max_pos_serial " << r.max_pos_serial() << ", skipping " << skip_size << " positions -> incrementing " << incr_steps << " steps" << std::endl;
         }
-        f.next(r.max_pos());
+        f.next(r.max_pos_serial());
         iter += incr_steps;
         unsigned long iter_div = iter / 1000000000;
         if (iter_div != last_iter_div || debug_level != 0) {
