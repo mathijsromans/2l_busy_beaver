@@ -27,13 +27,16 @@ class State
 public:
     Pos<N> pos{-1, 0};
     int d = 1;
-    const static int mem_size = 128;
-    std::array<char, mem_size> mbuf{};
+    const static int mem_size = 256;
+    const static int mem_limit = 256;
+    std::array<int, mem_size> mbuf{};
     int mloc = mem_size/2;
 
     bool memory_out_of_bounds() const
     {
-        return mloc < 0 || mloc >= mem_size;
+        return mloc < 0 || mloc >= mem_size ||
+        mbuf[mloc] == -mem_limit ||
+        mbuf[mloc] == +mem_limit;
     }
 };
 
@@ -83,6 +86,12 @@ public:
                         s.mbuf[s.mloc]--;
                         break;
                 }
+                if (debug_level) {
+                    std::cout << "mloc=" << s.mloc << "   " <<
+                                 static_cast<int>(s.mbuf[s.mloc-1]) << " " <<
+                                 static_cast<int>(s.mbuf[s.mloc]) << " " <<
+                                 static_cast<int>(s.mbuf[s.mloc+1]) << std::endl;
+                }
                 if (s.memory_out_of_bounds())
                 {
                     return 0;
@@ -93,7 +102,7 @@ public:
                 m_f.print(s.pos);
                 fflush(stdout);
                 printf("%d\n\n", steps);
-                usleep(300000);
+                usleep(100000);
             }
         }
         return 0;
@@ -137,18 +146,19 @@ int main()
 //    return 0;
 
     const int SIZE = 5;
-    Field<SIZE> orig = first_field<SIZE>();
-    Field<SIZE> f = orig;
-    Field<SIZE> best_field = orig;
     unsigned long iter = 0;
+    unsigned long iter_start = 0;
     unsigned long last_iter_div = -1;
     unsigned int max_steps = 0;
+    Field<SIZE> orig = from_iter<SIZE>(iter_start);
+    Field<SIZE> f = orig;
+    Field<SIZE> best_field = orig;
     do
     {
         Run<SIZE> r(f);
-        unsigned int steps = r.execute(400);
+        unsigned int steps = r.execute(4000);
         if ( steps > max_steps ) {
-            std::cout << "Found new best with total steps: " << steps << std::endl;
+            std::cout << "Found #" << iter << " new best with total steps: " << steps << std::endl;
             f.print();
             max_steps = steps;
             best_field = f;

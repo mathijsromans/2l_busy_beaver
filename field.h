@@ -188,6 +188,24 @@ Field<N> first_field()
 }
 
 template <int N>
+Field<N> from_iter(unsigned long iter)
+{
+    Field<N> f = first_field<N>();
+    const char order[] = {' ', '+', '*'};
+    for (int y = N-1; y != -1; --y) {
+        for (int x = N-1; x != -1; --x) {
+            unsigned long mod = iter % 3;
+            iter /= 3;
+            f.set(x, y, order[mod]);
+        }
+    }
+    for (unsigned long i = 0; i != iter; ++i) {
+        f.next();
+    }
+    return f;
+}
+
+template <int N>
 Field<N> read_file(std::string const& filename)
 {
     Field<N> f;
