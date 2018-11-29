@@ -2,6 +2,7 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -153,6 +154,7 @@ int main()
     Field<SIZE> orig = from_iter<SIZE>(iter_start);
     Field<SIZE> f = orig;
     Field<SIZE> best_field = orig;
+    auto start_time = std::chrono::steady_clock::now();
     do
     {
         Run<SIZE> r(f);
@@ -181,6 +183,10 @@ int main()
         }
     }
     while (f != orig);
+    auto current_time = std::chrono::steady_clock::now();
+    unsigned int duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+    std::cout << "Evalution took " << duration_ms/1000 << " seconds, " << duration_ms%1000 << " milliseconds" << std::endl;
+
     printf("Number of fields: %ld, maximum number of steps: %d\n", iter, max_steps);
     best_field.print();
     return 0;
