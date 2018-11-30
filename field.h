@@ -226,13 +226,13 @@ Field<N> read_file(std::string const& filename)
 {
     Field<N> f;
     std::ifstream infile(filename);
-    int y = 0;
-    for( std::string line; getline( infile, line ); ) {
-        if (line.back() == '\n') {
-            line.pop_back();
+    for (int y = 0; y != N; y++) {
+        std::string line;
+        getline( infile, line );
+        std::cout << line << std::endl;
+        for (int x = 0; x != N; x++) {
+            f.set(x, y, line[x]);
         }
-        f.set(y, line);
-        y++;
     }
     return f;
 }

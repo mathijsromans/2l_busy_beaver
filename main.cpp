@@ -15,7 +15,7 @@
 #include <cassert>
 #include <unistd.h>
 
-const unsigned int debug_level = 0;
+const unsigned int debug_level = 1;
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
@@ -32,8 +32,8 @@ class State
 public:
     Pos<N> pos{-1, 0};
     int d = 1;
-    const static int mem_size = 256;
-    const static int mem_limit = 256;
+    const static int mem_size = 2560;
+    const static int mem_limit = 2560;
     std::array<int, mem_size> mbuf{};
     int mloc = mem_size/2;
 
@@ -116,12 +116,6 @@ public:
                         s.mbuf[s.mloc]--;
                         break;
                 }
-                if (debug_level) {
-                    std::cout << "mloc=" << s.mloc << "   " <<
-                                 static_cast<int>(s.mbuf[s.mloc-1]) << " " <<
-                                 static_cast<int>(s.mbuf[s.mloc]) << " " <<
-                                 static_cast<int>(s.mbuf[s.mloc+1]) << std::endl;
-                }
                 if (s.memory_out_of_bounds())
                 {
                     return 0;
@@ -130,9 +124,14 @@ public:
 
             if (debug_level != 0) {
                 m_f.print(s.pos);
+                std::cout << "mloc=" << s.mloc << "   ";
+                for (int i = -4; i != 5; ++i) {
+                    std::cout << static_cast<int>(s.mbuf[s.mloc+i]) << " ";
+                }
+                std::cout << std::endl;
                 fflush(stdout);
                 printf("%d\n\n", steps);
-                usleep(300000);
+                usleep(500000);
             }
         }
         return 0;
@@ -187,8 +186,9 @@ int main()
     unsigned long last_iter_div = -1;
     unsigned int max_steps = 0;
     Field<SIZE> orig = from_iter<SIZE>(iter_start);
-    Field<SIZE> f = orig;
     Field<SIZE> best_field = orig;
+    Field<SIZE> f = orig;
+    f = read_file<SIZE>("../2l_busy_beaver/2l_busy_beaver/files/6x6.2l");
     auto start_time = std::chrono::steady_clock::now();
     do
     {
