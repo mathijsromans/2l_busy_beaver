@@ -4,16 +4,18 @@
 #include <bitset>
 #include <cmath>
 #include <cstdio>
+#include <iterator>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <cassert>
 #include <unistd.h>
 
-const unsigned int debug_level = 1;
+const unsigned int debug_level = 0;
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
@@ -48,10 +50,16 @@ class Run
 {
 private:
     Field<N> const& m_f;
+    std::bitset<N*N> serial_used;
+    std::vector<int> serials_used;
 
     char get(Pos<N> p)
     {
-        pos_used.set(p.serial());
+        int s = p.serial();
+        if (!serial_used.test(s)) {
+            serial_used.set(s);
+            serials_used.push_back(s);
+        }
         return m_f.get(p);
     }
 
@@ -60,19 +68,17 @@ public:
     int max_pos_serial() const
     {
 
-        unsigned int i = pos_used.size()-1;
+        unsigned int i = serial_used.size()-1;
         for(; i != static_cast<unsigned int>(-1); --i) {
-            if (pos_used.test(i)) {
+            if (serial_used.test(i)) {
                 break;
             }
         }
         if (i == static_cast<unsigned int>(-1)) {
-            i = pos_used.size()-1;
+            i = serial_used.size()-1;
         }
         return i;
     }
-
-    std::bitset<N*N> pos_used;
 
     unsigned int execute(unsigned int max_steps)
     {
@@ -126,10 +132,15 @@ public:
                 m_f.print(s.pos);
                 fflush(stdout);
                 printf("%d\n\n", steps);
-                usleep(100000);
+                usleep(300000);
             }
         }
         return 0;
+    }
+
+    std::vector<int> const& get_serials_used() const
+    {
+        return serials_used;
     }
 };
 
@@ -169,7 +180,8 @@ int main()
 //    test_next();
 //    return 0;
 
-    const int SIZE = 4;
+    const int SIZE = 6;
+    // SIZE=5 -> Evalution took 5970 seconds, 99 milliseconds; 5985 seconds, 301 milliseconds
     unsigned long iter = 0;
     unsigned long iter_start = 0;
     unsigned long last_iter_div = -1;
@@ -189,14 +201,16 @@ int main()
             best_field = f;
         }
 
-        unsigned int skip_size = Pos<SIZE>(SIZE-1, SIZE-1).serial() - r.max_pos_serial();
-        const unsigned int nr_of_symbols = 3;
-        unsigned long incr_steps = myPow(nr_of_symbols, skip_size);
+//        unsigned int skip_size = Pos<SIZE>(SIZE-1, SIZE-1).serial() - r.max_pos_serial();
+//        const unsigned int nr_of_symbols = 3;
+//        unsigned long incr_steps = myPow(nr_of_symbols, skip_size);
         if (debug_level) {
-            std::cout << "with max_pos_serial " << r.max_pos_serial() << ", skipping " << skip_size << " positions -> incrementing " << incr_steps << " steps" << std::endl;
+            std::cout << "with get_serials_used: ";
+            std::copy(r.get_serials_used().begin(), r.get_serials_used().end(), std::ostream_iterator<int>(std::cout, " "));
+            std::cout << std::endl;
         }
-        f.next(r.max_pos_serial());
-        iter += incr_steps;
+        f.next(r.get_serials_used());
+//        iter += incr_steps;
         unsigned long iter_div = iter / 1000000000;
         if (iter_div != last_iter_div || debug_level != 0) {
             last_iter_div = iter_div;
@@ -214,3 +228,5 @@ int main()
     best_field.print();
     return 0;
 }
+
+

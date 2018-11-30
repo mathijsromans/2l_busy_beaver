@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <vector>
 #include <unistd.h>
 
 template <int N>
@@ -123,7 +124,7 @@ public:
 
     void next(int max_change_pos_serial = N*N-1)
     {
-        const char order[] = {' ', '+', '*'};
+        const char order[] = {' ', '*', '+'};
         unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
         for (unsigned int i = max_change_pos_serial; i != static_cast<unsigned>(-1); --i) {
             for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
@@ -133,6 +134,21 @@ public:
                 }
             }
             pbuf[i] = order[0];
+        }
+    }
+
+    void next(std::vector<int> const& serials_used)
+    {
+        const char order[] = {' ', '*', '+'};
+        unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
+        for (auto serial_it = serials_used.rbegin(); serial_it != serials_used.rend(); ++serial_it) {
+            for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
+                if (pbuf[*serial_it] == order[j]) {
+                    pbuf[*serial_it] = order[j+1];
+                    return;
+                }
+            }
+            pbuf[*serial_it] = order[0];
         }
     }
 
