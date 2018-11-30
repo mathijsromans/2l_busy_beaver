@@ -15,7 +15,7 @@
 #include <cassert>
 #include <unistd.h>
 
-const unsigned int debug_level = 1;
+const unsigned int debug_level = 0;
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
@@ -50,6 +50,7 @@ class Run
 {
 private:
     Field<N> const& m_f;
+    State<N> m_s;
     std::bitset<N*N> serial_used;
     std::vector<int> serials_used;
 
@@ -80,58 +81,77 @@ public:
         return i;
     }
 
+    void print_state(unsigned int steps)
+    {
+        m_f.print(m_s.pos);
+        std::cout << "mloc=" << m_s.mloc << "   ";
+        for (int i = -4; i != 5; ++i) {
+            std::cout << static_cast<int>(m_s.mbuf[m_s.mloc+i]) << " ";
+        }
+        std::cout << std::endl;
+        fflush(stdout);
+        printf("%d\n\n", steps);
+        usleep(500000);
+    }
+
+    enum class StepResult { ok, done, overflow };
+
+    StepResult step()
+    {
+        while(true) {
+            Pos<N> next = m_s.pos;
+            bool out_of_bounds = false;
+            next.move(m_s.d, out_of_bounds);
+            if (out_of_bounds) {
+                return StepResult::done;
+            }
+            if (get(next) != '+') {
+                m_s.pos = next;
+                break;
+            }
+            if (m_s.mbuf[m_s.mloc]) {
+                m_s.d = (m_s.d+1)%4; // turn right
+            } else {
+                m_s.d = (m_s.d+3)%4; // turn left
+            }
+        }
+        if (get(m_s.pos) == '*') {
+            switch (m_s.d) {
+                case 0: /* up */
+                    m_s.mloc--;
+                    break;
+                case 1: /* right */
+                    m_s.mbuf[m_s.mloc]++;
+                    break;
+                case 2: /* down */
+                    m_s.mloc++;
+                    break;
+                case 3: /* left */
+                    m_s.mbuf[m_s.mloc]--;
+                    break;
+            }
+            if (m_s.memory_out_of_bounds())
+            {
+                return StepResult::overflow;
+            }
+        }
+        return StepResult::ok;
+    }
+
     unsigned int execute(unsigned int max_steps)
     {
-        State<N> s;
+        std::vector<State<N>> previous_states;
         for(unsigned int steps = 0; steps != max_steps; ++steps) {
-            while(true) {
-                Pos<N> next = s.pos;
-                bool out_of_bounds = false;
-                next.move(s.d, out_of_bounds);
-                if (out_of_bounds) {
-                    return steps;
-                }
-                if (get(next) != '+') {
-                    s.pos = next;
-                    break;
-                }
-                if (s.mbuf[s.mloc]) {
-                    s.d = (s.d+1)%4; // turn right
-                } else {
-                    s.d = (s.d+3)%4; // turn left
-                }
+            StepResult step_result = step();
+            if (step_result == StepResult::done) {
+                return steps;
             }
-            if (get(s.pos) == '*') {
-                switch (s.d) {
-                    case 0: /* up */
-                        s.mloc--;
-                        break;
-                    case 1: /* right */
-                        s.mbuf[s.mloc]++;
-                        break;
-                    case 2: /* down */
-                        s.mloc++;
-                        break;
-                    case 3: /* left */
-                        s.mbuf[s.mloc]--;
-                        break;
-                }
-                if (s.memory_out_of_bounds())
-                {
-                    return 0;
-                }
+            else if (step_result == StepResult::overflow) {
+                return 0; // presume infinite
             }
 
             if (debug_level != 0) {
-                m_f.print(s.pos);
-                std::cout << "mloc=" << s.mloc << "   ";
-                for (int i = -4; i != 5; ++i) {
-                    std::cout << static_cast<int>(s.mbuf[s.mloc+i]) << " ";
-                }
-                std::cout << std::endl;
-                fflush(stdout);
-                printf("%d\n\n", steps);
-                usleep(500000);
+                print_state(steps);
             }
         }
         return 0;
@@ -188,7 +208,7 @@ int main()
     Field<SIZE> orig = from_iter<SIZE>(iter_start);
     Field<SIZE> best_field = orig;
     Field<SIZE> f = orig;
-    f = read_file<SIZE>("../2l_busy_beaver/2l_busy_beaver/files/6x6.2l");
+//    f = read_file<SIZE>("../2l_busy_beaver/2l_busy_beaver/files/6x6.2l");
     auto start_time = std::chrono::steady_clock::now();
     do
     {
