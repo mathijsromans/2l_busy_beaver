@@ -7,7 +7,7 @@ template <int N>
 class State
 {
 private:
-    const static int mem_size = 10000;
+    const static int mem_size = 30000;
     std::array<int, mem_size> mbuf{};
     std::array<int, mem_size>::size_type mloc{0};
     std::array<int, mem_size>::size_type m_min_mloc{0};

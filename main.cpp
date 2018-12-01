@@ -39,7 +39,7 @@ void test_next()
 
 int main()
 {
-    const int SIZE = 6;
+    const int SIZE = 7;
     unsigned long iter = 0;
     unsigned long iter_start = 0;
     unsigned long last_iter_div = -1;
@@ -55,9 +55,9 @@ int main()
     do
     {
         r.reset(f);
-        unsigned int steps = r.execute(10000);
+        unsigned int steps = r.execute(100000);
         if ( steps > max_steps ) {
-            std::cout << "Found #" << iter << " new best with total steps: " << steps << std::endl;
+            std::cout << "Found new best with total steps: " << steps << std::endl;
             f.print();
             max_steps = steps;
             best_field = f;
@@ -72,18 +72,18 @@ int main()
             std::cout << std::endl;
         }
         f.next(r.get_serials_used());
-//        iter += incr_steps;
-        unsigned long iter_div = iter / 1000000000;
+        unsigned long iter_div = iter / 1000000;
         if (iter_div != last_iter_div || debug_level != 0) {
             last_iter_div = iter_div;
-            const unsigned long total_steps = powr(3, SIZE*SIZE);
-            printf("iter = %ld / %ld (%g%%)\n", iter, total_steps, 100.0 * iter / total_steps);
+            printf("iter = %ld\n", iter);
             fflush(stdout);
         }
+        ++iter;
     }
     while (f != orig);
     auto current_time = std::chrono::steady_clock::now();
     unsigned int duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+    std::cout << SIZE << "x" << SIZE << std::endl;
     std::cout << "Evalution took " << duration_ms/1000 << " seconds, " << duration_ms%1000 << " milliseconds" << std::endl;
 
     printf("Number of fields: %ld, maximum number of steps: %d\n", iter, max_steps);

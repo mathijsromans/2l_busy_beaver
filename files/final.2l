@@ -1,0 +1,73 @@
+git: e54456548dbf52ad8d7bf4ecd91a719a6524b633
+
+1x1
+Evalution took 0 seconds, 0 milliseconds
+Number of fields: 0, maximum number of steps: 1
+---
+| |
+---
+
+2x2
+Evalution took 0 seconds, 0 milliseconds
+Number of fields: 9, maximum number of steps: 2
+----
+|  |
+|  |
+----
+
+3x3
+Evalution took 0 seconds, 0 milliseconds
+Number of fields: 59, maximum number of steps: 4
+-----
+| *+|
+|   |
+|   |
+-----
+
+4x4
+Evalution took 0 seconds, 1 milliseconds
+Number of fields: 891, maximum number of steps: 14
+------
+|*++ |
+|* *+|
+|+* +|
+| ++ |
+------
+
+5x5
+Evalution took 0 seconds, 835 milliseconds
+Number of fields: 59553, maximum number of steps: 43
+-------
+|***+ |
+| +**+|
+|  +  |
+|+*  +|
+| + + |
+-------
+
+6x6
+Evalution took 460 seconds, 641 milliseconds
+Number of fields: 19181715, maximum number of steps: 572
+--------
+|*+  + |
+|*  +*+|
+|* *+  |
+|+****+|
+| *+  +|
+| +  + |
+--------
+
+7x7
+---------
+|     *+|
+| ++    |
+|+   +  |
+|+ *** +|
+| +*** +|
+|  *+   |
+|  +  + |
+---------
+Found new best with total steps: 13549
+
+
+
