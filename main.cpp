@@ -15,15 +15,6 @@ constexpr unsigned long powr(unsigned long a, unsigned long b)
     return r;
 }
 
-unsigned long myPow(unsigned long x, unsigned int p)
-{
-    unsigned long result = 1;
-    for (unsigned int i = 0; i != p; ++i) {
-        result *= x;
-    }
-    return result;
-}
-
 void test_next()
 {
     const unsigned int SIZE = 3;
