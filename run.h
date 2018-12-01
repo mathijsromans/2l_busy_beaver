@@ -60,11 +60,7 @@ public:
     void print_state(unsigned int steps)
     {
         m_f->print(m_s.pos);
-        std::cout << "mloc=" << m_s.mloc << "   ";
-        for (int i = -4; i != 5; ++i) {
-            std::cout << static_cast<int>(m_s.mbuf[m_s.mloc+i]) << " ";
-        }
-        std::cout << std::endl;
+        m_s.print();
         fflush(stdout);
         printf("%d\n\n", steps);
         usleep(500000);
@@ -85,7 +81,7 @@ public:
                 m_s.pos = next;
                 break;
             }
-            if (m_s.mbuf[m_s.mloc]) {
+            if (m_s.get_mem()) {
                 m_s.d = (m_s.d+1)%4; // turn right
             } else {
                 m_s.d = (m_s.d+3)%4; // turn left
@@ -94,16 +90,16 @@ public:
         if (get(m_s.pos) == '*') {
             switch (m_s.d) {
                 case 0: /* up */
-                    m_s.mloc--;
+                    m_s.decr_mem_loc();
                     break;
                 case 1: /* right */
-                    m_s.mbuf[m_s.mloc]++;
+                    m_s.incr_mem();
                     break;
                 case 2: /* down */
-                    m_s.mloc++;
+                    m_s.incr_mem_loc();
                     break;
                 case 3: /* left */
-                    m_s.mbuf[m_s.mloc]--;
+                    m_s.decr_mem();
                     break;
             }
             if (m_s.memory_out_of_bounds())
