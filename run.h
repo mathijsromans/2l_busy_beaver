@@ -116,7 +116,7 @@ public:
 
     bool loop_detected(unsigned int step)
     {
-        if (step == 25 ||
+        if (step == 50 ||
             (m_loop_detection_period && step == m_previous_state_step + m_loop_detection_period)) {
             if (m_loop_detection_period && m_previous_state == m_s)
             {

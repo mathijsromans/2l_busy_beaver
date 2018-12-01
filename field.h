@@ -14,10 +14,11 @@ int XY(int x, int y)
 template <int N>
 class Pos
 {
-public:
     int m_x, m_y;
+    int m_serial;
+public:
 
-    Pos(int x, int y) : m_x(x), m_y(y) {}
+    Pos(int x, int y) : m_x{x}, m_y{y}, m_serial{y*N + x} {}
 
     bool operator==(Pos other) const
     {
@@ -36,7 +37,7 @@ public:
 
     int serial() const
     {
-        return m_y*N + m_x;
+        return m_serial;
     }
 
     void move(int d, bool& out_of_bounds)
@@ -48,6 +49,7 @@ public:
                     return;
                 }
                 --m_y;
+                m_serial -= N;
                 break;
             case 1: /* right */
                 if ( m_x == N-1 ) {
@@ -55,6 +57,7 @@ public:
                     return;
                 }
                 ++m_x;
+                ++m_serial;
                 break;
             case 2: /* down */
                 if ( m_y == N-1 ) {
@@ -62,6 +65,7 @@ public:
                     return;
                 }
                 ++m_y;
+                m_serial += N;
                 break;
             case 3: /* left */
                 if ( m_x == 0 ) {
@@ -69,6 +73,7 @@ public:
                     return;
                 }
                 --m_x;
+                --m_serial;
                 break;
         }
     }
