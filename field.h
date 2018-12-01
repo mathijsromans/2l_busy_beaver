@@ -1,15 +1,9 @@
 #pragma once
 
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <string>
 #include <iostream>
-#include <cassert>
 #include <vector>
-#include <unistd.h>
 
 template <int N>
 int XY(int x, int y)

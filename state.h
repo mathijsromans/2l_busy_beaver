@@ -1,6 +1,7 @@
 #pragma once
 
 #include "field.h"
+#include <array>
 
 template <int N>
 class State

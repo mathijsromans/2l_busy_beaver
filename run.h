@@ -4,6 +4,7 @@
 #include "field.h"
 #include "state.h"
 #include <bitset>
+#include <unistd.h>
 
 template <int N>
 class Run

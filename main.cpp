@@ -1,22 +1,10 @@
 #include "field.h"
-#include <array>
-#include "field.h"
 #include "run.h"
 #include "state.h"
-#include <algorithm>
-#include <cmath>
-#include <cstdio>
-#include <iterator>
-#include <chrono>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <string>
-#include <deque>
-#include <vector>
-#include <iostream>
 #include <cassert>
-#include <unistd.h>
+#include <chrono>
+#include <iostream>
+#include <iterator>
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
