@@ -51,9 +51,10 @@ int main()
         f = read_file<SIZE>(filename);
     }
     auto start_time = std::chrono::steady_clock::now();
+    Run<SIZE> r;
     do
     {
-        Run<SIZE> r(f);
+        r.reset(f);
         unsigned int steps = r.execute(4000);
         if ( steps > max_steps ) {
             std::cout << "Found #" << iter << " new best with total steps: " << steps << std::endl;

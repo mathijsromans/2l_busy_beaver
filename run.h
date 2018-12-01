@@ -10,7 +10,7 @@ template <int N>
 class Run
 {
 private:
-    Field<N> const& m_f;
+    Field<N> const* m_f;
     State<N> m_s;
     State<N> m_previous_state;
     unsigned int m_previous_state_step{0};
@@ -25,11 +25,23 @@ private:
             serial_used.set(s);
             serials_used.push_back(s);
         }
-        return m_f.get(p);
+        return m_f->get(p);
     }
 
 public:
-    explicit Run(Field<N> const& f) : m_f(f) {}
+    explicit Run() : m_f(nullptr) {}
+
+    void reset(Field<N> const& f)
+    {
+        m_f = &f;
+        m_s = State<N>{};
+        m_previous_state = State<N>{};
+        m_previous_state_step = 0;
+        m_loop_detection_period = 0;
+        serial_used.reset();
+        serials_used.clear();
+    }
+
     int max_pos_serial() const
     {
 
@@ -47,7 +59,7 @@ public:
 
     void print_state(unsigned int steps)
     {
-        m_f.print(m_s.pos);
+        m_f->print(m_s.pos);
         std::cout << "mloc=" << m_s.mloc << "   ";
         for (int i = -4; i != 5; ++i) {
             std::cout << static_cast<int>(m_s.mbuf[m_s.mloc+i]) << " ";
@@ -110,7 +122,7 @@ public:
             {
                 if (debug_level != 0) {
                     std::cout << "Loop detected:" << std::endl;
-                    m_f.print();
+                    m_f->print();
                 }
                 return true;
             }
@@ -134,7 +146,7 @@ public:
             else if (step_result == StepResult::overflow) {
                 if (debug_level != 0) {
                     std::cout << "Overflow detected:" << std::endl;
-                    m_f.print();
+                    m_f->print();
                 }
                 return 0; // presume infinite
             }
