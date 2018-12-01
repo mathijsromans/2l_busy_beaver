@@ -132,30 +132,38 @@ public:
         return false;
     }
 
-    unsigned int execute(unsigned int max_steps)
+    enum class ResultType { finite, infinite, error };
+    struct Result
+    {
+        ResultType type;
+        unsigned int steps;
+    };
+
+
+    Result execute(unsigned int max_steps)
     {
         for(unsigned int step = 0; step != max_steps; ++step) {
             StepResult step_result = do_step();
             if (step_result == StepResult::done) {
-                return step;
+                return Result{ResultType::finite, step};
             }
             else if (step_result == StepResult::overflow) {
                 if (debug_level != 0) {
                     std::cout << "Overflow detected:" << std::endl;
                     m_f->print();
                 }
-                return 0; // presume infinite
+                return Result{ResultType::error, 0};
             }
 
             if (loop_detected(step)) {
-                return 0;
+                return Result{ResultType::infinite, 0};
             }
 
             if (debug_level != 0) {
                 print_state(step);
             }
         }
-        return 0;
+        return Result{ResultType::error, 0};
     }
 
     std::vector<int> const& get_serials_used() const
