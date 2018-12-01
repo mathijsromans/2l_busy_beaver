@@ -55,7 +55,7 @@ int main()
     do
     {
         r.reset(f);
-        unsigned int steps = r.execute(4000);
+        unsigned int steps = r.execute(10000);
         if ( steps > max_steps ) {
             std::cout << "Found #" << iter << " new best with total steps: " << steps << std::endl;
             f.print();

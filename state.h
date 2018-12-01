@@ -7,8 +7,7 @@ template <int N>
 class State
 {
 private:
-    const static int mem_size = 512;
-    const static int mem_limit = 512;
+    const static int mem_size = 10000;
     std::array<int, mem_size> mbuf{};
     std::array<int, mem_size>::size_type mloc{0};
     std::array<int, mem_size>::size_type m_min_mloc{0};
@@ -68,9 +67,7 @@ public:
 
     bool memory_out_of_bounds() const
     {
-        return mloc < 0 || mloc >= mem_size ||
-        mbuf[mloc] == -mem_limit ||
-        mbuf[mloc] == +mem_limit;
+        return mloc < 0 || mloc >= mem_size;
     }
 
     void print() const
