@@ -14,6 +14,14 @@ public:
     std::array<int, mem_size> mbuf{};
     int mloc = mem_size/2;
 
+    void reset()
+    {
+        pos = Pos<N>{-1, 0};
+        d = 1;
+        mbuf.fill(0);
+        mloc = mem_size/2;
+    }
+
     bool operator==(State<N> const& other) const {
         return pos == other.pos &&
                 d == other.d &&

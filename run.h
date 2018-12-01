@@ -34,8 +34,8 @@ public:
     void reset(Field<N> const& f)
     {
         m_f = &f;
-        m_s = State<N>{};
-        m_previous_state = State<N>{};
+        m_s.reset();
+//        m_previous_state.reset(); // NOTE: for optimization this step is skipped!
         m_previous_state_step = 0;
         m_loop_detection_period = 0;
         serial_used.reset();
