@@ -10,12 +10,16 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <deque>
 #include <vector>
 #include <iostream>
 #include <cassert>
 #include <unistd.h>
 
 const unsigned int debug_level = 0;
+//const unsigned int debug_level = 1;
+const std::string filename;
+//const std::string filename = "../2l_busy_beaver/2l_busy_beaver/files/infinite_loop.2l";
 
 constexpr unsigned long powr(unsigned long a, unsigned long b)
 {
@@ -32,10 +36,18 @@ class State
 public:
     Pos<N> pos{-1, 0};
     int d = 1;
-    const static int mem_size = 2560;
-    const static int mem_limit = 2560;
+    const static int mem_size = 256;
+    const static int mem_limit = 256;
     std::array<int, mem_size> mbuf{};
     int mloc = mem_size/2;
+
+    bool operator==(State<N> const& other) const {
+        return pos == other.pos &&
+                d == other.d &&
+                mbuf == other.mbuf &&
+                mloc == other.mloc;
+    }
+
 
     bool memory_out_of_bounds() const
     {
@@ -51,6 +63,9 @@ class Run
 private:
     Field<N> const& m_f;
     State<N> m_s;
+    State<N> m_previous_state;
+    unsigned int m_previous_state_step{0};
+    unsigned int m_loop_detection_period{0};
     std::bitset<N*N> serial_used;
     std::vector<int> serials_used;
 
@@ -96,7 +111,7 @@ public:
 
     enum class StepResult { ok, done, overflow };
 
-    StepResult step()
+    StepResult do_step()
     {
         while(true) {
             Pos<N> next = m_s.pos;
@@ -138,20 +153,49 @@ public:
         return StepResult::ok;
     }
 
+    bool loop_detected(unsigned int step)
+    {
+        if (step == 25 ||
+            (m_loop_detection_period && step == m_previous_state_step + m_loop_detection_period)) {
+            if (m_loop_detection_period && m_previous_state == m_s)
+            {
+                if (debug_level != 0) {
+                    std::cout << "Loop detected:" << std::endl;
+                    m_f.print();
+                }
+                return true;
+            }
+            m_previous_state = m_s;
+            m_previous_state_step = step;
+            ++m_loop_detection_period;
+            if (debug_level) {
+                std::cout << "Setting loop detection period to " << m_loop_detection_period << std::endl;
+            }
+        }
+        return false;
+    }
+
     unsigned int execute(unsigned int max_steps)
     {
-        std::vector<State<N>> previous_states;
-        for(unsigned int steps = 0; steps != max_steps; ++steps) {
-            StepResult step_result = step();
+        for(unsigned int step = 0; step != max_steps; ++step) {
+            StepResult step_result = do_step();
             if (step_result == StepResult::done) {
-                return steps;
+                return step;
             }
             else if (step_result == StepResult::overflow) {
+                if (debug_level != 0) {
+                    std::cout << "Overflow detected:" << std::endl;
+                    m_f.print();
+                }
                 return 0; // presume infinite
             }
 
+            if (loop_detected(step)) {
+                return 0;
+            }
+
             if (debug_level != 0) {
-                print_state(steps);
+                print_state(step);
             }
         }
         return 0;
@@ -196,11 +240,7 @@ void test_next()
 
 int main()
 {
-//    test_next();
-//    return 0;
-
     const int SIZE = 6;
-    // SIZE=5 -> Evalution took 5970 seconds, 99 milliseconds; 5985 seconds, 301 milliseconds
     unsigned long iter = 0;
     unsigned long iter_start = 0;
     unsigned long last_iter_div = -1;
@@ -208,7 +248,9 @@ int main()
     Field<SIZE> orig = from_iter<SIZE>(iter_start);
     Field<SIZE> best_field = orig;
     Field<SIZE> f = orig;
-//    f = read_file<SIZE>("../2l_busy_beaver/2l_busy_beaver/files/6x6.2l");
+    if (!filename.empty()) {
+        f = read_file<SIZE>(filename);
+    }
     auto start_time = std::chrono::steady_clock::now();
     do
     {
