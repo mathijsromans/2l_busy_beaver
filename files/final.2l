@@ -1,14 +1,14 @@
-git: e54456548dbf52ad8d7bf4ecd91a719a6524b633
-
 1x1
 Evalution took 0 seconds, 0 milliseconds
-Number of fields: 0, maximum number of steps: 1
+There were 0 fields with failed evaluation
+Number of fields: 3, maximum number of steps: 1
 ---
 | |
 ---
 
 2x2
 Evalution took 0 seconds, 0 milliseconds
+There were 0 fields with failed evaluation
 Number of fields: 9, maximum number of steps: 2
 ----
 |  |
@@ -17,6 +17,7 @@ Number of fields: 9, maximum number of steps: 2
 
 3x3
 Evalution took 0 seconds, 0 milliseconds
+There were 0 fields with failed evaluation
 Number of fields: 59, maximum number of steps: 4
 -----
 | *+|
@@ -25,7 +26,8 @@ Number of fields: 59, maximum number of steps: 4
 -----
 
 4x4
-Evalution took 0 seconds, 1 milliseconds
+Evalution took 0 seconds, 5 milliseconds
+There were 1 fields with failed evaluation
 Number of fields: 891, maximum number of steps: 14
 ------
 |*++ |
@@ -35,7 +37,8 @@ Number of fields: 891, maximum number of steps: 14
 ------
 
 5x5
-Evalution took 0 seconds, 835 milliseconds
+Evalution took 2 seconds, 736 milliseconds
+There were 1060 fields with failed evaluation
 Number of fields: 59553, maximum number of steps: 43
 -------
 |***+ |
@@ -45,6 +48,8 @@ Number of fields: 59553, maximum number of steps: 43
 | + + |
 -------
 
+-------------------------------------------------------------
+git: e54456548dbf52ad8d7bf4ecd91a719a6524b633
 6x6
 Evalution took 460 seconds, 641 milliseconds
 Number of fields: 19181715, maximum number of steps: 572

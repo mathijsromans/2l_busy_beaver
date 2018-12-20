@@ -33,13 +33,14 @@ public:
         m_f(nullptr),
         m_s(),
         m_monitor(m_s)
-    {}
+    {
+    }
 
     void reset(Field<N> const& f)
     {
+        // note that the m_monitor is not reset
         m_f = &f;
         m_s.reset();
-        m_monitor.reset();
         m_previous_state_step = 0;
         m_loop_detection_period = 0;
         serial_used.reset();
@@ -67,7 +68,7 @@ public:
         m_s.print();
         fflush(stdout);
         printf("%d\n\n", steps);
-        usleep(500000);
+        usleep(200000);
     }
 
     enum class StepResult { ok, done, overflow };
@@ -114,7 +115,7 @@ public:
         return StepResult::ok;
     }
 
-    bool loop_detected(unsigned int step)
+    bool detect_loop(unsigned int step)
     {
         if (step == 50 ||
             (m_loop_detection_period && step == m_previous_state_step + m_loop_detection_period)) {
@@ -126,6 +127,7 @@ public:
                 }
                 return true;
             }
+            m_s.set_monitor(&m_monitor);
             m_monitor.start();
             m_previous_state_step = step;
             ++m_loop_detection_period;
@@ -148,6 +150,11 @@ public:
     {
         for(unsigned int step = 0; step != max_steps; ++step) {
             StepResult step_result = do_step();
+
+            if (debug_level != 0) {
+                print_state(step);
+            }
+
             if (step_result == StepResult::done) {
                 return Result{ResultType::finite, step};
             }
@@ -159,13 +166,10 @@ public:
                 return Result{ResultType::error, 0};
             }
 
-            if (loop_detected(step)) {
+            if (detect_loop(step)) {
                 return Result{ResultType::infinite, 0};
             }
 
-            if (debug_level != 0) {
-                print_state(step);
-            }
         }
         return Result{ResultType::error, 0};
     }

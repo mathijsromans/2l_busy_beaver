@@ -39,7 +39,7 @@ void test_next()
 
 int main()
 {
-    const int SIZE = 4;
+    const int SIZE = 1;
     unsigned long iter = 0;
     unsigned long iter_start = 0;
     unsigned int max_steps = 0;
@@ -49,6 +49,15 @@ int main()
     std::vector<Field<SIZE>> error_fields;
     if (!filename.empty()) {
         f = read_file<SIZE>(filename);
+        Run<SIZE> r;
+        r.reset(f);
+        Run<SIZE>::Result result = r.execute(100000);
+        if (result.type == Run<SIZE>::ResultType::error) {
+            std::cout << "Field could not be evaluated: " << std::endl; }
+        else if ( result.type == Run<SIZE>::ResultType::finite && result.steps > max_steps ) {
+            std::cout << "Found new best with total steps: " << result.steps << std::endl;
+        }
+        return 0;
     }
     auto start_time = std::chrono::steady_clock::now();
     Run<SIZE> r;

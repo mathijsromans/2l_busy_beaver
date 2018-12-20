@@ -25,6 +25,11 @@ public:
         return m_x == other.m_x && m_y == other.m_y;
     }
 
+    bool operator!=(Pos other) const
+    {
+        return !(*this == other);
+    }
+
     bool operator>(Pos other) const
     {
         return serial() > other.serial();
