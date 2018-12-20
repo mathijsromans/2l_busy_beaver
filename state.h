@@ -79,3 +79,26 @@ public:
         std::cout << std::endl;
     }
 };
+
+template <int N>
+class Monitor
+{
+private:
+    State<N> const& m_s;
+    State<N> m_original;
+
+public:
+    explicit Monitor(State<N> const& state) : m_s(state) {}
+
+    bool detect_loop() const {
+        return m_s == m_original;
+    }
+
+    void start() {
+        m_original = m_s;
+    }
+
+    void reset() {
+    }
+
+};
