@@ -75,4 +75,27 @@ Number of fields: 19181715, maximum number of steps: 572
 Found new best with total steps: 13549
 
 
+Difficult 6x6
+--------
+|  *++ |
+| +    |
+|  *+  |
+|+****+|
+| ++*  |
+|    + |
+--------
+
+Infinite 6x6
+--------
+|    *+|
+| +    |
+|     +|
+|      |
+|+     |
+|    + |
+--------
+
+
+
+
 
