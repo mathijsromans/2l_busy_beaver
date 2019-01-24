@@ -33,7 +33,7 @@ void test_next()
     {
         ++i;
     }
-    assert(i == myPow(3, SIZE*SIZE));
+//    assert(i == myPow(3, SIZE*SIZE));
     std::cout << i << std::endl;
 }
 
@@ -74,7 +74,7 @@ void investigate()
     do
     {
         r.reset(f);
-        typename Run<N>::Result result = r.execute(100);
+        typename Run<N>::Result result = r.execute(100000);
         if (result.type == Run<N>::ResultType::error) {
 //            std::cout << "Field could not be evaluated: " << std::endl;
 //            f.print();
@@ -88,7 +88,7 @@ void investigate()
             best_field = f;
         }
         f.next(r.get_serials_used());
-        if (iter % 100000 == 0 || debug_level != 0) {
+        if (iter % 1000000 == 0 || debug_level != 0) {
             printf("iter = %ld\n", iter);
             fflush(stdout);
         }
@@ -108,7 +108,7 @@ void investigate()
 
 int main()
 {
-    const int SIZE = 7;
+    const int SIZE = 5;
     if (!g_filename.empty()) {
         run_from_file<SIZE>(g_filename);
     }

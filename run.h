@@ -117,7 +117,12 @@ public:
 
     bool detect_loop(unsigned int step)
     {
-        if (step == 5000000 ||
+        const unsigned int start_detection_steps = 20;
+        const unsigned int stop_detection_steps = 500;
+        if (step > stop_detection_steps) {
+            return false;
+        }
+        if (step == start_detection_steps ||
             (m_loop_detection_period && step == m_previous_state_step + m_loop_detection_period)) {
             if (m_loop_detection_period && m_monitor.detect_loop())
             {

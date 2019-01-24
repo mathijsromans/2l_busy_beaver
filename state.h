@@ -5,6 +5,55 @@
 
 template <int N> class Monitor;
 
+/**
+ * Array with efficient reset
+ */
+template <int SZ>
+class TrackedArray
+{
+public:
+    using size_type = typename std::array<int, SZ>::size_type;
+
+    TrackedArray() {
+        std::fill(data.begin(), data.end(), 0);
+    }
+
+    bool operator==(TrackedArray<SZ> const& other) const {
+        return data == other.data;
+    }
+
+    int& get_ref(size_type n) {
+        mmin_used = std::min(mmin_used, n);
+        mmax_used = std::max(mmax_used, n);
+        return data[n];
+    }
+
+    int get(size_type n) const {
+        return data[n];
+    }
+
+    void set(size_type n, int value) {
+        mmin_used = std::min(mmin_used, n);
+        mmax_used = std::max(mmax_used, n);
+        data[n] = value;
+    }
+
+    void clear()
+    {
+        if (mmin_used <= mmax_used)
+        {
+            std::fill(data.begin() + mmin_used, data.begin() + mmax_used + 1, 0);
+        }
+        mmin_used = SZ;
+        mmax_used = 0;
+    }
+
+private:
+    std::array<int, SZ> data{};
+    size_type mmin_used = SZ;
+    size_type mmax_used = 0;
+};
+
 template <int N>
 class State
 {
@@ -18,8 +67,8 @@ private:
 
 public:
 
-    std::array<int, mem_size> mbuf{};
-    std::array<int, mem_size>::size_type mloc{0};
+    TrackedArray<mem_size> mbuf;
+    TrackedArray<mem_size>::size_type mloc{0};
     Pos<N> pos{-1, 0};
     int d = 1;
 
@@ -27,7 +76,7 @@ public:
     {
         pos = Pos<N>{-1, 0};
         d = 1;
-        std::fill(std::begin(mbuf)+m_min_mloc, std::begin(mbuf)+m_max_mloc + 1, 0);
+        mbuf.clear();
         mloc = mem_size/2;
         m_min_mloc = mloc;
         m_max_mloc = mloc;
@@ -37,7 +86,6 @@ public:
     bool operator==(State<N> const& other) const {
         return pos == other.pos &&
                 d == other.d &&
-                mbuf == other.mbuf &&
                 mloc == other.mloc;
     }
 
@@ -50,19 +98,19 @@ public:
     int get_mem() const
     {
         mem_used();
-        return mbuf[mloc];
+        return mbuf.get(mloc);
     }
 
     void incr_mem()
     {
         mem_used();
-        ++mbuf[mloc];
+        ++mbuf.get_ref(mloc);
     }
 
     void decr_mem()
     {
         mem_used();
-        --mbuf[mloc];
+        --mbuf.get_ref(mloc);
     }
 
     void incr_mem_loc()
@@ -94,7 +142,7 @@ public:
     {
         std::cout << "mloc=" << mloc << "   ";
         for (int i = -9; i != 10; ++i) {
-            std::cout << static_cast<int>(mbuf[mloc+i]) << " ";
+            std::cout << static_cast<int>(mbuf.get(mloc+i)) << " ";
         }
         std::cout << std::endl;
     }
@@ -120,7 +168,7 @@ public:
         }
         mem_loc_type mem_move = m_s.mloc - m_original.mloc;
         for (mem_loc_type mloc = m_min_mloc; mloc != m_max_mloc+1; ++mloc) {
-            if (m_s.mbuf[mloc+mem_move] != m_original.mbuf[mloc])
+            if (m_s.mbuf.get(mloc+mem_move) != m_original.mbuf.get(mloc))
             {
                 return false;
             }
