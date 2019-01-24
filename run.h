@@ -117,7 +117,7 @@ public:
 
     bool detect_loop(unsigned int step)
     {
-        if (step == 50 ||
+        if (step == 5000000 ||
             (m_loop_detection_period && step == m_previous_state_step + m_loop_detection_period)) {
             if (m_loop_detection_period && m_monitor.detect_loop())
             {
