@@ -243,7 +243,7 @@ public:
         for (mem_loc_type mloc = m_min_mloc; mloc != m_max_mloc+1; ++mloc) {
             int mem_sign = sgn(m_s.mbuf.get(mloc));
             int mem_change_sign = sgn(m_s.mbuf.get(mloc) - m_original.mbuf.get(mloc));
-            if (mem_sign != mem_change_sign) {
+            if (mem_change_sign != 0 && mem_sign != mem_change_sign) {
                 return false;
             }
         }
@@ -262,6 +262,9 @@ public:
         m_min_mloc = std::min(m_min_mloc, m_s.mloc);
         if (m_s.mbuf.get(m_s.mloc) == 0) {
             m_mem_was_zero = true;
+            if (debug_level) {
+                std::cout << "GrowingMemoryLoopDetector: zero memory detected" << std::endl;
+            }
         }
     }
 };
