@@ -2,8 +2,9 @@
 
 #include "field.h"
 #include <array>
+#include <memory>
 
-template <int N> class Monitor;
+template <int N> class MainLoopDetector;
 
 /**
  * Array with efficient reset
@@ -63,7 +64,7 @@ public:
 private:
     std::array<int, mem_size>::size_type m_min_mloc{0};
     std::array<int, mem_size>::size_type m_max_mloc{0};
-    Monitor<N>* m_monitor{nullptr};
+    MainLoopDetector<N>* m_loop_detector{nullptr};
 
 public:
 
@@ -80,7 +81,7 @@ public:
         mloc = mem_size/2;
         m_min_mloc = mloc;
         m_max_mloc = mloc;
-        m_monitor = nullptr;
+        m_loop_detector = nullptr;
     }
 
     bool operator==(State<N> const& other) const {
@@ -90,8 +91,8 @@ public:
     }
 
     void mem_used() const {
-        if (m_monitor) {
-            m_monitor->mem_used();
+        if (m_loop_detector) {
+            m_loop_detector->mem_used();
         }
     }
 
@@ -134,8 +135,8 @@ public:
         return mloc < 0 || mloc >= mem_size;
     }
 
-    void set_monitor(Monitor<N>* monitor) {
-        m_monitor = monitor;
+    void set_loop_detector(MainLoopDetector<N>* loop_detector) {
+        m_loop_detector = loop_detector;
     }
 
     void print() const
@@ -148,8 +149,20 @@ public:
     }
 };
 
+
+//template <int N>
+//class LoopDetector
+//{
+//public:
+//    virtual ~LoopDetector() = default;
+//    virtual bool detect_loop() const = 0;
+//    virtual void start() = 0;
+//    virtual void mem_used() = 0;
+//};
+
+
 template <int N>
-class Monitor
+class IdenticalMemoryLoopDetector
 {
 private:
     State<N> const& m_s;
@@ -159,7 +172,7 @@ private:
     mem_loc_type m_max_mloc{0};
 
 public:
-    explicit Monitor(State<N> const& state) : m_s(state) {}
+    explicit IdenticalMemoryLoopDetector(State<N> const& state) : m_s(state) {}
 
     bool detect_loop() const {
         if (m_s.pos != m_original.pos ||
@@ -185,6 +198,106 @@ public:
     void mem_used() {
         m_max_mloc = std::max(m_max_mloc, m_s.mloc);
         m_min_mloc = std::min(m_min_mloc, m_s.mloc);
+    }
+};
+
+namespace {
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+}
+
+template <int N>
+class GrowingMemoryLoopDetector
+{
+private:
+    State<N> const& m_s;
+    State<N> m_original;
+    using mem_loc_type = typename std::array<int, State<N>::mem_size>::size_type;
+    mem_loc_type m_min_mloc{0};
+    mem_loc_type m_max_mloc{0};
+    bool m_mem_was_zero;
+
+public:
+    explicit GrowingMemoryLoopDetector(State<N> const& state) : m_s(state) {}
+
+    bool detect_loop() const {
+        if (m_s.pos != m_original.pos ||
+            m_s.d != m_original.d ) {
+            return false;
+        }
+        if (m_mem_was_zero)
+        {
+            return false;
+        }
+        if (m_s.mloc != m_original.mloc)
+        {
+            return false;
+        }
+        for (mem_loc_type mloc = m_min_mloc; mloc != m_max_mloc+1; ++mloc) {
+            if (m_s.mbuf.get(mloc) == 0)
+            {
+                return false;
+            }
+        }
+        for (mem_loc_type mloc = m_min_mloc; mloc != m_max_mloc+1; ++mloc) {
+            int mem_sign = sgn(m_s.mbuf.get(mloc));
+            int mem_change_sign = sgn(m_s.mbuf.get(mloc) - m_original.mbuf.get(mloc));
+            if (mem_sign != mem_change_sign) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void start() {
+        m_min_mloc = m_s.mloc;
+        m_max_mloc = m_s.mloc;
+        m_original = m_s;
+        m_mem_was_zero = false;
+    }
+
+    void mem_used() {
+        m_max_mloc = std::max(m_max_mloc, m_s.mloc);
+        m_min_mloc = std::min(m_min_mloc, m_s.mloc);
+        if (m_s.mbuf.get(m_s.mloc) == 0) {
+            m_mem_was_zero = true;
+        }
+    }
+};
+
+template <int N>
+class MainLoopDetector
+{
+private:
+    IdenticalMemoryLoopDetector<N> m_loop_detector_1;
+    GrowingMemoryLoopDetector<N> m_loop_detector_2;
+
+public:
+    explicit MainLoopDetector(State<N> const& state) :
+        m_loop_detector_1(state),
+        m_loop_detector_2(state)
+    {
+    }
+
+    bool detect_loop() const {
+        if (m_loop_detector_1.detect_loop()) {
+            return true;
+        }
+        if (m_loop_detector_2.detect_loop()) {
+            return true;
+        }
+        return false;
+    }
+
+    void start() {
+        m_loop_detector_1.start();
+        m_loop_detector_2.start();
+    }
+
+    void mem_used() {
+        m_loop_detector_1.mem_used();
+        m_loop_detector_2.mem_used();
     }
 };
 

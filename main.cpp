@@ -76,8 +76,8 @@ void investigate()
         r.reset(f);
         typename Run<N>::Result result = r.execute(100000);
         if (result.type == Run<N>::ResultType::error) {
-//            std::cout << "Field could not be evaluated: " << std::endl;
-//            f.print();
+            std::cout << "Field could not be evaluated: " << std::endl;
+            f.print();
 //            error_fields.push_back(f);
             ++num_error_fields;
         }

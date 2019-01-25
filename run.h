@@ -12,7 +12,7 @@ class Run
 private:
     Field<N> const* m_f;
     State<N> m_s;
-    Monitor<N> m_monitor;
+    MainLoopDetector<N> m_loop_detector;
     unsigned int m_previous_state_step{0};
     unsigned int m_loop_detection_period{0};
     std::bitset<N*N> serial_used;
@@ -32,13 +32,13 @@ public:
     explicit Run() :
         m_f(nullptr),
         m_s(),
-        m_monitor(m_s)
+        m_loop_detector(m_s)
     {
     }
 
     void reset(Field<N> const& f)
     {
-        // note that the m_monitor is not reset
+        // note that the m_loop_detector is not reset
         m_f = &f;
         m_s.reset();
         m_previous_state_step = 0;
@@ -124,7 +124,7 @@ public:
         }
         if (step == start_detection_steps ||
             (m_loop_detection_period && step == m_previous_state_step + m_loop_detection_period)) {
-            if (m_loop_detection_period && m_monitor.detect_loop())
+            if (m_loop_detection_period && m_loop_detector.detect_loop())
             {
                 if (debug_level != 0) {
                     std::cout << "Loop detected:" << std::endl;
@@ -132,8 +132,8 @@ public:
                 }
                 return true;
             }
-            m_s.set_monitor(&m_monitor);
-            m_monitor.start();
+            m_s.set_loop_detector(&m_loop_detector);
+            m_loop_detector.start();
             m_previous_state_step = step;
             ++m_loop_detection_period;
             if (debug_level) {
