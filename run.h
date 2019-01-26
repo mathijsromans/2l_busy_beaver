@@ -117,8 +117,8 @@ public:
 
     bool detect_loop(unsigned int step)
     {
-        const unsigned int start_detection_steps = 20;
-        const unsigned int stop_detection_steps = 500;
+        const unsigned int start_detection_steps = 30;
+        const unsigned int stop_detection_steps = 5000;
         if (step > stop_detection_steps) {
             return false;
         }
@@ -143,7 +143,7 @@ public:
         return false;
     }
 
-    enum class ResultType { finite, infinite, error };
+    enum class ResultType { finite, infinite, error, LAST_VALUE=error };
     struct Result
     {
         ResultType type;

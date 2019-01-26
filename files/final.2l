@@ -37,9 +37,9 @@ Number of fields: 891, maximum number of steps: 14
 ------
 
 5x5
-Evalution took 2 seconds, 736 milliseconds
-There were 1060 fields with failed evaluation
-Number of fields: 59553, maximum number of steps: 43
+Evalution took 1 seconds, 486 milliseconds
+There were 124 fields with failed evaluation
+Number of fields: 33314, maximum number of steps: 43
 -------
 |***+ |
 | +**+|
@@ -47,12 +47,15 @@ Number of fields: 59553, maximum number of steps: 43
 |+*  +|
 | + + |
 -------
+Statistics:
+finite: 27437
+infinite: 5753
+error: 124
 
--------------------------------------------------------------
-git: e54456548dbf52ad8d7bf4ecd91a719a6524b633
 6x6
-Evalution took 460 seconds, 641 milliseconds
-Number of fields: 19181715, maximum number of steps: 572
+Evalution took 1666 seconds, 287 milliseconds
+There were 163822 fields with failed evaluation
+Number of fields: 11452820, maximum number of steps: 572
 --------
 |*+  + |
 |*  +*+|
@@ -61,19 +64,23 @@ Number of fields: 19181715, maximum number of steps: 572
 | *+  +|
 | +  + |
 --------
+Statistics:
+finite: 8688239
+infinite: 2600759
+error: 163822
 
 7x7
+iter = 300000000
+Found new best with total steps: 140163
 ---------
-|     *+|
-| ++    |
-|+   +  |
-|+ *** +|
-| +*** +|
-|  *+   |
-|  +  + |
+|*    + |
+| + +**+|
+|    +  |
+|  +** +|
+|+ ****+|
+|   +  +|
+| +   + |
 ---------
-Found new best with total steps: 13549
-
 
 Difficult 6x6
 --------

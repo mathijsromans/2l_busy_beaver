@@ -145,17 +145,10 @@ public:
 
     void next(std::vector<int> const& serials_used)
     {
-        const char order[] = {' ', '*', '+'};
-        unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
-        for (auto serial_it = serials_used.rbegin(); serial_it != serials_used.rend(); ++serial_it) {
-            for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
-                if (pbuf[*serial_it] == order[j]) {
-                    pbuf[*serial_it] = order[j+1];
-                    return;
-                }
-            }
-            pbuf[*serial_it] = order[0];
+        do {
+            next_iter(serials_used);
         }
+        while (!is_valid_iter());
     }
 
     constexpr int size()
@@ -194,6 +187,41 @@ public:
     }
 
 private:
+
+    bool is_valid_iter()
+    {
+        // must start with '*'
+        if (get(Pos<N>(0, 0)) != '*') {
+            return false;
+        }
+
+        // assume ' ' at any exit points on the right and bottom; evaluating '*' is unnecessary
+        for (unsigned int i = 1; i != N; ++i) {
+            if (get(Pos<N>(N-1, i)) == '*' ||
+                get(Pos<N>(i, N-1)) == '*' ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void next_iter(std::vector<int> const& serials_used)
+    {
+        const char order[] = {' ', '*', '+'};
+        unsigned int sizeOfArray = sizeof(order) / sizeof(order[0]);
+        for (auto serial_it = serials_used.rbegin(); serial_it != serials_used.rend(); ++serial_it) {
+            for (unsigned int j = 0; j != sizeOfArray-1; ++j) {
+                if (pbuf[*serial_it] == order[j]) {
+                    pbuf[*serial_it] = order[j+1];
+                    return;
+                }
+            }
+            pbuf[*serial_it] = order[0];
+        }
+    }
+
+private:
     char pbuf[N*N];
 };
 
@@ -206,6 +234,7 @@ Field<N> first_field()
             f.set(x, y, ' ');
         }
     }
+    f.set(0, 0, '*');
     return f;
 }
 
@@ -213,14 +242,6 @@ template <int N>
 Field<N> from_iter(unsigned long iter)
 {
     Field<N> f = first_field<N>();
-    const char order[] = {' ', '+', '*'};
-    for (int y = N-1; y != -1; --y) {
-        for (int x = N-1; x != -1; --x) {
-            unsigned long mod = iter % 3;
-            iter /= 3;
-            f.set(x, y, order[mod]);
-        }
-    }
     for (unsigned long i = 0; i != iter; ++i) {
         f.next();
     }
